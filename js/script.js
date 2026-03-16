@@ -1,0 +1,358 @@
+/**
+ * SortWise — Shared JavaScript
+ * Handles: navbar toggle, admin dashboard charts/tables, user dashboard charts.
+ */
+
+// ============================================
+// NAVBAR — Mobile Toggle
+// ============================================
+function initNavbar() {
+  const toggleBtn = document.getElementById('mobile-menu-btn');
+  const mobileNav = document.getElementById('mobile-nav');
+
+  if (!toggleBtn || !mobileNav) return;
+
+  toggleBtn.addEventListener('click', () => {
+    const isOpen = mobileNav.classList.toggle('open');
+    // Swap hamburger ↔ close icon
+    toggleBtn.innerHTML = isOpen
+      ? '<svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/></svg>'
+      : '<svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><line x1="3" y1="12" x2="21" y2="12"/><line x1="3" y1="6" x2="21" y2="6"/><line x1="3" y1="18" x2="21" y2="18"/></svg>';
+  });
+
+  // Highlight active page in nav
+  const currentPage = window.location.pathname.split('/').pop() || 'index.html';
+  document.querySelectorAll('.nav-links a, .mobile-nav a').forEach((link) => {
+    const href = link.getAttribute('href');
+    if (href === currentPage || (currentPage === 'index.html' && href === 'Home.html')) {
+      link.classList.add('active');
+    }
+  });
+}
+
+// ============================================
+// BAR CHART — Pure Canvas Rendering
+// ============================================
+
+/**
+ * Draw a grouped / stacked horizontal or vertical bar chart on a <canvas>.
+ * @param {string} canvasId
+ * @param {Object} config
+ */
+function drawBarChart(canvasId, config) {
+  const canvas = document.getElementById(canvasId);
+  if (!canvas) return;
+
+  const ctx = canvas.getContext('2d');
+  const dpr = window.devicePixelRatio || 1;
+
+  // Responsive sizing
+  const rect = canvas.parentElement.getBoundingClientRect();
+  canvas.width = rect.width * dpr;
+  canvas.height = rect.height * dpr;
+  canvas.style.width = rect.width + 'px';
+  canvas.style.height = rect.height + 'px';
+  ctx.scale(dpr, dpr);
+
+  const W = rect.width;
+  const H = rect.height;
+  const {
+    data,
+    labels,
+    datasets,
+    orientation = 'vertical', // 'vertical' or 'horizontal'
+    stacked = true,
+  } = config;
+
+  const padding = { top: 30, right: 30, bottom: 60, left: orientation === 'horizontal' ? 90 : 50 };
+  const chartW = W - padding.left - padding.right;
+  const chartH = H - padding.top - padding.bottom;
+
+  // Calculate max value
+  let maxVal = 0;
+  data.forEach((item) => {
+    let sum = 0;
+    datasets.forEach((ds) => { sum += item[ds.key] || 0; });
+    if (sum > maxVal) maxVal = sum;
+  });
+  maxVal = Math.ceil(maxVal / 100) * 100 || 100;
+
+  // Clear
+  ctx.clearRect(0, 0, W, H);
+
+  // Grid lines
+  ctx.strokeStyle = '#e2e8f0';
+  ctx.lineWidth = 1;
+  ctx.setLineDash([4, 4]);
+  const gridCount = 5;
+
+  if (orientation === 'vertical') {
+    for (let i = 0; i <= gridCount; i++) {
+      const y = padding.top + chartH - (chartH / gridCount) * i;
+      ctx.beginPath();
+      ctx.moveTo(padding.left, y);
+      ctx.lineTo(W - padding.right, y);
+      ctx.stroke();
+
+      // Y-axis labels
+      ctx.fillStyle = '#64748b';
+      ctx.font = '11px Inter, sans-serif';
+      ctx.textAlign = 'right';
+      ctx.fillText(Math.round((maxVal / gridCount) * i), padding.left - 8, y + 4);
+    }
+  } else {
+    for (let i = 0; i <= gridCount; i++) {
+      const x = padding.left + (chartW / gridCount) * i;
+      ctx.beginPath();
+      ctx.moveTo(x, padding.top);
+      ctx.lineTo(x, H - padding.bottom);
+      ctx.stroke();
+
+      ctx.fillStyle = '#64748b';
+      ctx.font = '11px Inter, sans-serif';
+      ctx.textAlign = 'center';
+      ctx.fillText(Math.round((maxVal / gridCount) * i), x, H - padding.bottom + 18);
+    }
+  }
+  ctx.setLineDash([]);
+
+  // Draw bars
+  const barCount = data.length;
+
+  if (orientation === 'vertical') {
+    const barGroupWidth = chartW / barCount;
+    const barWidth = Math.min(barGroupWidth * 0.5, 40);
+
+    data.forEach((item, i) => {
+      const x = padding.left + barGroupWidth * i + (barGroupWidth - barWidth) / 2;
+      let yOffset = 0;
+
+      datasets.forEach((ds) => {
+        const val = item[ds.key] || 0;
+        const barH = (val / maxVal) * chartH;
+        const y = padding.top + chartH - yOffset - barH;
+
+        ctx.fillStyle = ds.color;
+        roundRect(ctx, x, y, barWidth, barH, 4);
+
+        yOffset += barH;
+      });
+
+      // X-axis label
+      ctx.fillStyle = '#64748b';
+      ctx.font = '12px Inter, sans-serif';
+      ctx.textAlign = 'center';
+      ctx.fillText(labels[i], x + barWidth / 2, H - padding.bottom + 20);
+    });
+  } else {
+    const barGroupHeight = chartH / barCount;
+    const barHeight = Math.min(barGroupHeight * 0.5, 30);
+
+    data.forEach((item, i) => {
+      const y = padding.top + barGroupHeight * i + (barGroupHeight - barHeight) / 2;
+      let xOffset = 0;
+
+      datasets.forEach((ds) => {
+        const val = item[ds.key] || 0;
+        const barW = (val / maxVal) * chartW;
+
+        ctx.fillStyle = ds.color;
+        roundRect(ctx, padding.left + xOffset, y, barW, barHeight, 4);
+
+        xOffset += barW;
+      });
+
+      // Y-axis label
+      ctx.fillStyle = '#292421';
+      ctx.font = '12px Inter, sans-serif';
+      ctx.textAlign = 'right';
+      ctx.fillText(labels[i], padding.left - 8, y + barHeight / 2 + 4);
+    });
+  }
+
+  // Legend
+  const legendY = H - 15;
+  let legendX = padding.left;
+  ctx.font = '12px Inter, sans-serif';
+  datasets.forEach((ds) => {
+    ctx.fillStyle = ds.color;
+    ctx.fillRect(legendX, legendY - 8, 12, 12);
+    ctx.fillStyle = '#64748b';
+    ctx.textAlign = 'left';
+    ctx.fillText(ds.label, legendX + 16, legendY + 2);
+    legendX += ctx.measureText(ds.label).width + 36;
+  });
+}
+
+/** Helper: draw a rounded rectangle */
+function roundRect(ctx, x, y, w, h, r) {
+  if (h <= 0 || w <= 0) return;
+  r = Math.min(r, h / 2, w / 2);
+  ctx.beginPath();
+  ctx.moveTo(x + r, y);
+  ctx.lineTo(x + w - r, y);
+  ctx.quadraticCurveTo(x + w, y, x + w, y + r);
+  ctx.lineTo(x + w, y + h - r);
+  ctx.quadraticCurveTo(x + w, y + h, x + w - r, y + h);
+  ctx.lineTo(x + r, y + h);
+  ctx.quadraticCurveTo(x, y + h, x, y + h - r);
+  ctx.lineTo(x, y + r);
+  ctx.quadraticCurveTo(x, y, x + r, y);
+  ctx.closePath();
+  ctx.fill();
+}
+
+// ============================================
+// ADMIN DASHBOARD — Household Table & Fines
+// ============================================
+
+const mockUsers = [
+  { id: 'HH-1042', name: 'Alex Johnson', totalWaste: '18.3 kg', correctWaste: '17.1 kg', incorrectWaste: '1.2 kg', accuracy: 93, finesCount: 0, recentlyFined: false },
+  { id: 'HH-2910', name: 'Sarah Smith', totalWaste: '24.5 kg', correctWaste: '14.2 kg', incorrectWaste: '10.3 kg', accuracy: 58, finesCount: 1, recentlyFined: false },
+  { id: 'HH-0844', name: 'Michael Chang', totalWaste: '12.1 kg', correctWaste: '12.0 kg', incorrectWaste: '0.1 kg', accuracy: 99, finesCount: 0, recentlyFined: false },
+  { id: 'HH-5521', name: 'Emma Davis', totalWaste: '31.0 kg', correctWaste: '22.5 kg', incorrectWaste: '8.5 kg', accuracy: 72, finesCount: 0, recentlyFined: false },
+  { id: 'HH-9932', name: 'Robert Wilson', totalWaste: '15.8 kg', correctWaste: '11.2 kg', incorrectWaste: '4.6 kg', accuracy: 70, finesCount: 2, recentlyFined: false },
+];
+
+function initAdminDashboard() {
+  const searchInput = document.getElementById('household-search');
+  const tableBody = document.getElementById('household-tbody');
+
+  if (!searchInput || !tableBody) return;
+
+  function renderTable(filter = '') {
+    const filtered = mockUsers.filter(
+      (u) =>
+        u.name.toLowerCase().includes(filter.toLowerCase()) ||
+        u.id.toLowerCase().includes(filter.toLowerCase())
+    );
+
+    if (filtered.length === 0) {
+      tableBody.innerHTML =
+        '<tr class="empty-row"><td colspan="5">No households found matching your search.</td></tr>';
+      return;
+    }
+
+    tableBody.innerHTML = filtered
+      .map((user) => {
+        const accClass = user.accuracy >= 90 ? 'green' : user.accuracy >= 75 ? 'yellow' : 'red';
+        const incorrectClass = parseFloat(user.incorrectWaste) > 5 ? 'text-red' : 'text-gray';
+        const finesBadge =
+          user.finesCount > 0
+            ? `<div class="fine-badge"><svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z"/></svg> ${user.finesCount} previous fine(s)</div>`
+            : '';
+
+        const btnDisabled = user.recentlyFined || user.accuracy >= 90;
+        const btnClass = user.recentlyFined ? 'btn btn-sm btn-fined' : 'btn btn-sm btn-fine-action';
+        const btnContent = user.recentlyFined
+          ? '<svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="20 6 9 17 4 12"/></svg> Fined'
+          : '<svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><line x1="12" y1="1" x2="12" y2="23"/><path d="M17 5H9.5a3.5 3.5 0 0 0 0 7h5a3.5 3.5 0 0 1 0 7H6"/></svg> Charge Fine';
+
+        return `
+          <tr>
+            <td>
+              <div class="user-name">${user.name}</div>
+              <div class="user-id">${user.id}</div>
+            </td>
+            <td>
+              <div class="text-sm">${user.totalWaste}</div>
+              <div class="text-xs text-green font-medium">${user.correctWaste} sorted</div>
+            </td>
+            <td>
+              <div class="text-sm font-medium ${incorrectClass}">${user.incorrectWaste}</div>
+              ${finesBadge}
+            </td>
+            <td>
+              <div class="accuracy-bar-container">
+                <div class="accuracy-bar"><div class="accuracy-bar-fill ${accClass}" style="width:${user.accuracy}%"></div></div>
+                <span class="text-sm font-medium">${user.accuracy}%</span>
+              </div>
+            </td>
+            <td style="text-align:center;">
+              <button class="${btnClass}" data-user-id="${user.id}" ${btnDisabled ? 'disabled' : ''}>${btnContent}</button>
+            </td>
+          </tr>`;
+      })
+      .join('');
+
+    // Attach fine button handlers
+    tableBody.querySelectorAll('[data-user-id]').forEach((btn) => {
+      btn.addEventListener('click', () => {
+        const userId = btn.getAttribute('data-user-id');
+        const user = mockUsers.find((u) => u.id === userId);
+        if (user && !user.recentlyFined) {
+          user.recentlyFined = true;
+          user.finesCount++;
+          renderTable(searchInput.value);
+        }
+      });
+    });
+  }
+
+  searchInput.addEventListener('input', () => renderTable(searchInput.value));
+
+  // Initial render
+  renderTable();
+
+  // Draw admin chart
+  drawBarChart('admin-chart', {
+    data: [
+      { correct: 400, incorrect: 45 },
+      { correct: 300, incorrect: 80 },
+      { correct: 500, incorrect: 30 },
+      { correct: 278, incorrect: 65 },
+      { correct: 480, incorrect: 120 },
+    ],
+    labels: ['North Dist.', 'South Dist.', 'East Dist.', 'West Dist.', 'Central'],
+    datasets: [
+      { key: 'correct', label: 'Correct (kg)', color: '#BAE0DA' },
+      { key: 'incorrect', label: 'Incorrect (kg)', color: '#E1AD01' },
+    ],
+    orientation: 'horizontal',
+    stacked: true,
+  });
+}
+
+// ============================================
+// USER DASHBOARD — Weekly Chart
+// ============================================
+
+function initUserDashboard() {
+  drawBarChart('user-chart', {
+    data: [
+      { correct: 2.1, incorrect: 0.2 },
+      { correct: 1.8, incorrect: 0.0 },
+      { correct: 2.4, incorrect: 0.5 },
+      { correct: 1.5, incorrect: 0.1 },
+      { correct: 3.0, incorrect: 0.3 },
+      { correct: 3.5, incorrect: 0.0 },
+      { correct: 2.8, incorrect: 0.1 },
+    ],
+    labels: ['Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat', 'Sun'],
+    datasets: [
+      { key: 'correct', label: 'Correctly Sorted (kg)', color: '#7A958F' },
+      { key: 'incorrect', label: 'Incorrectly Sorted (kg)', color: '#292421' },
+    ],
+    orientation: 'vertical',
+    stacked: true,
+  });
+}
+
+// ============================================
+// INIT
+// ============================================
+document.addEventListener('DOMContentLoaded', () => {
+  initNavbar();
+  initAdminDashboard();
+  initUserDashboard();
+});
+
+// Redraw charts on resize
+let resizeTimer;
+window.addEventListener('resize', () => {
+  clearTimeout(resizeTimer);
+  resizeTimer = setTimeout(() => {
+    initAdminDashboard();
+    initUserDashboard();
+  }, 250);
+});
