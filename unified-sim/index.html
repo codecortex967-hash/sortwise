@@ -1,0 +1,147 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>SortWise | Unified Smart Bin System</title>
+    <link rel="stylesheet" href="style.css">
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/gsap/3.12.2/gsap.min.js"></script>
+    <script type="importmap">
+        {
+            "imports": {
+                "three": "https://unpkg.com/three@0.160.0/build/three.module.js",
+                "three/addons/": "https://unpkg.com/three@0.160.0/examples/jsm/"
+            }
+        }
+    </script>
+</head>
+<body>
+    <div id="unified-wrapper">
+        <header>
+            <div class="logo">SortWise <span>Unified</span></div>
+            <div class="status-bar">
+                <div class="status-pill cyan">SYSTEM: ONLINE</div>
+                <div class="status-pill" id="master-status-pill">IDLE</div>
+            </div>
+            <div class="copyright">© ALL COPYRIGHT RESERVED BY SORTWISE</div>
+        </header>
+
+        <main>
+            <!-- LEFT: Hardware Architecture View -->
+            <section id="hardware-panel">
+                <div class="panel-header">HARDWARE ARCHITECTURE</div>
+                <div class="blueprint-canvas">
+                    <div class="flowchart-container">
+                        <div class="flow-item" id="card-sensor">
+                            <div class="flow-icon">📡</div>
+                            <div class="flow-label">Drop Detector</div>
+                            <div class="flow-sub">Ultrasonic</div>
+                        </div>
+                        
+                        <div class="flow-arrow" id="path-1"></div>
+
+                        <div class="flow-item" id="card-camera">
+                            <div class="flow-icon">📷</div>
+                            <div class="flow-label">Vision System</div>
+                            <div class="flow-sub">Camera Module</div>
+                        </div>
+
+                        <div class="flow-arrow" id="path-2"></div>
+
+                        <div class="flow-item" id="card-pi">
+                            <div class="flow-icon">🧠</div>
+                            <div class="flow-label">AI Processor</div>
+                            <div class="flow-sub">Raspberry Pi 4</div>
+                        </div>
+
+                        <div class="flow-arrow" id="path-3"></div>
+
+                        <div class="flow-group">
+                            <div class="flow-item" id="card-servo">
+                                <div class="flow-icon">⚙️</div>
+                                <div class="flow-label">Mechanical</div>
+                                <div class="flow-sub">Servo Motor</div>
+                            </div>
+                            <div class="flow-item" id="card-wifi">
+                                <div class="flow-icon">📶</div>
+                                <div class="flow-label">Cloud Sync</div>
+                                <div class="flow-sub">WiFi Module</div>
+                            </div>
+                        </div>
+
+                        <div class="flow-arrow" id="path-4"></div>
+
+                        <div class="flow-group">
+                            <div class="flow-item" id="card-fill">
+                                <div class="flow-icon">⚖️</div>
+                                <div class="flow-label">Capacity</div>
+                                <div class="flow-sub">Fill Sensors</div>
+                            </div>
+                            <div class="flow-item" id="card-led">
+                                <div class="flow-icon">💡</div>
+                                <div class="flow-label">Status LED</div>
+                                <div class="flow-sub">RGB Feedback</div>
+                            </div>
+                        </div>
+                    </div>
+                    
+                    <!-- Simplified pulse overlay -->
+                    <svg id="pulse-layer" viewBox="0 0 100 100" preserveAspectRatio="none">
+                        <circle id="pulse-dot" r="2" fill="#00f2ff" class="hidden" />
+                    </svg>
+                </div>
+                
+                <div id="log-panel">
+                    <div class="log-title">HARDWARE COMMUNICATION LOG</div>
+                    <div id="log-content">> System Initialized. Awaiting Input.</div>
+                </div>
+            </section>
+
+            <!-- RIGHT: 3D Visualization View -->
+            <section id="three-panel">
+                <div class="panel-header">3D PHYSICAL SIMULATION</div>
+                <div id="canvas-container"></div>
+                
+                <div id="telemetry-overlay">
+                    <div class="tel-item">CLASS: <span id="tel-class">---</span></div>
+                    <div class="tel-item">CONFIDENCE: <span id="tel-conf">--%</span></div>
+                    <button class="floating-reset" onclick="resetUnified()">RESET VIEW</button>
+                </div>
+            </section>
+        </main>
+
+        <section id="control-dashboard">
+            <div class="dashboard-header">
+                <h3>SIMULATION COMMAND CENTER</h3>
+                <p>Select a waste category to trigger the synchronous hardware-to-physical segregation flow</p>
+            </div>
+            <div class="fill-stats">
+                <div class="f-bin">PLASTIC <div class="f-bar"><div id="f-plastic" class="f-inner p-bg"></div></div></div>
+                <div class="f-bin">METAL <div class="f-bar"><div id="f-metal" class="f-inner m-bg"></div></div></div>
+                <div class="f-bin">PAPER <div class="f-bar"><div id="f-paper" class="f-inner y-bg"></div></div></div>
+                <div class="f-bin">GLASS <div class="f-bar"><div id="f-glass" class="f-inner g-bg"></div></div></div>
+                <div class="f-bin">ORGANIC <div class="f-bar"><div id="f-organic" class="f-inner o-bg"></div></div></div>
+            </div>
+
+            <div class="action-bar">
+                <button class="btn drop plastic" onclick="runSyncSimulation('plastic')">Drop Plastic</button>
+                <button class="btn drop metal" onclick="runSyncSimulation('metal')">Drop Metal</button>
+                <button class="btn drop paper" onclick="runSyncSimulation('paper')">Drop Paper</button>
+                <button class="btn drop glass" onclick="runSyncSimulation('glass')">Drop Glass</button>
+                <button class="btn drop organic" onclick="runSyncSimulation('organic')">Drop Organic</button>
+                <button class="btn reset" onclick="resetUnified()">Reset System</button>
+            </div>
+        </section>
+    </div>
+
+    <div id="warning-popup" class="hidden">
+        <div class="warning-box">
+            <div class="w-header">CAPACITY WARNING</div>
+            <div id="warning-text"></div>
+            <button onclick="this.parentElement.parentElement.classList.add('hidden')">ACKNOWLEDGE</button>
+        </div>
+    </div>
+
+    <script src="script.js" type="module"></script>
+</body>
+</html>

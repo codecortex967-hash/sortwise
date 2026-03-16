@@ -1,0 +1,160 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>SortWise | Hardware Architecture Simulation</title>
+    <link rel="stylesheet" href="style.css">
+    <!-- GSAP for smooth animations -->
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/gsap/3.12.2/gsap.min.js"></script>
+</head>
+<body>
+    <div id="simulation-wrapper">
+        <header>
+            <div class="logo">SortWise <span>SimOps</span></div>
+            <div class="project-title">Hardware Architecture Visualization</div>
+            <div class="copyright">© all copyright reserved by SortWise</div>
+        </header>
+
+        <main>
+            <!-- Left: Hardware Component Inventory -->
+            <section id="hardware-inventory">
+                <h3>Hardware Registry</h3>
+                <div class="component-list">
+                    <div class="comp-card" id="card-sensor" title="Detects incoming waste items using high-frequency sound waves.">
+                        <div class="icon">📡</div>
+                        <div class="info">
+                            <span class="label">Ultrasonic Sensor</span>
+                            <span class="status">IDLE</span>
+                        </div>
+                    </div>
+                    <div class="comp-card" id="card-camera" title="Captures 1080p images for the AI model to process.">
+                        <div class="icon">📷</div>
+                        <div class="info">
+                            <span class="label">Camera Module</span>
+                            <span class="status">IDLE</span>
+                        </div>
+                    </div>
+                    <div class="comp-card" id="card-pi" title="Central Processing Unit running the YOLOv8 classification model.">
+                        <div class="icon">🧠</div>
+                        <div class="info">
+                            <span class="label">Raspberry Pi</span>
+                            <span class="status">IDLE</span>
+                        </div>
+                    </div>
+                    <div class="comp-card" id="card-servo" title="Precision actuator that rotates the segregation flipper.">
+                        <div class="icon">⚙️</div>
+                        <div class="info">
+                            <span class="label">Servo Motor</span>
+                            <span class="status">IDLE</span>
+                        </div>
+                    </div>
+                    <div class="comp-card" id="card-fill" title="Monitors depth levels inside the bins.">
+                        <div class="icon">⚖️</div>
+                        <div class="info">
+                            <span class="label">Fill Sensors</span>
+                            <span class="status">IDLE</span>
+                        </div>
+                    </div>
+                    <div class="comp-card" id="card-led" title="Provides visual system feedback to the user.">
+                        <div class="icon">💡</div>
+                        <div class="info">
+                            <span class="label">RGB Indicator</span>
+                            <span class="status">IDLE</span>
+                        </div>
+                    </div>
+                </div>
+            </section>
+
+            <!-- Center: Interactive Blueprint -->
+            <section id="blueprint-area">
+                <div class="blueprint-canvas">
+                    <!-- SVG Architecture Lines will be here -->
+                    <svg id="architecture-lines" width="100%" height="100%" viewBox="0 0 800 600">
+                        <defs>
+                            <filter id="glow">
+                                <feGaussianBlur stdDeviation="2.5" result="coloredBlur"/>
+                                <feMerge>
+                                    <feMergeNode in="coloredBlur"/>
+                                    <feMergeNode in="SourceGraphic"/>
+                                </feMerge>
+                            </filter>
+                        </defs>
+                        <!-- Connection Lines -->
+                        <path id="path-sensor-pi" d="M150,150 L400,300" class="wire" />
+                        <path id="path-camera-pi" d="M150,250 L400,300" class="wire" />
+                        <path id="path-pi-servo" d="M400,300 L650,200" class="wire" />
+                        <path id="path-pi-fill" d="M400,300 L650,400" class="wire" />
+                        <path id="path-pi-led" d="M400,300 L650,520" class="wire" />
+                        
+                        <!-- Pulse Points -->
+                        <circle id="pulse" r="4" fill="#00f2ff" class="hidden" />
+                    </svg>
+
+                    <!-- Center Bin Visualization -->
+                    <div id="bin-visual-container">
+                        <div class="bin-base">
+                            <div class="bin-top-attachment">
+                                <div class="camera-lens"></div>
+                                <div class="sensor-eyes"></div>
+                                <div class="servo-arm"></div>
+                            </div>
+                        </div>
+                        <div class="led-glow" id="system-led"></div>
+                    </div>
+                </div>
+            </section>
+
+            <!-- Right: Telemetry Hub -->
+            <section id="telemetry-hub">
+                <h3>System Telemetry</h3>
+                <div class="telemetry-grid">
+                    <div class="tel-card">
+                        <span class="tel-label">Detection:</span>
+                        <div id="tel-class" class="tel-value">Awaiting...</div>
+                    </div>
+                    <div class="tel-card">
+                        <span class="tel-label">Confidence:</span>
+                        <div id="tel-conf" class="tel-value">--%</div>
+                    </div>
+                </div>
+
+                <div class="fill-monitor">
+                    <h4>Compartment Status</h4>
+                    <div class="bin-track"><span class="bt-label">Plastic</span> <div class="bar"><div id="bar-plastic" class="fill"></div></div></div>
+                    <div class="bin-track"><span class="bt-label">Metal</span> <div class="bar"><div id="bar-metal" class="fill"></div></div></div>
+                    <div class="bin-track"><span class="bt-label">Paper</span> <div class="bar"><div id="bar-paper" class="fill"></div></div></div>
+                    <div class="bin-track"><span class="bt-label">Glass</span> <div class="bar"><div id="bar-glass" class="fill"></div></div></div>
+                    <div class="bin-track"><span class="bt-label">Organic</span> <div class="bar"><div id="bar-organic" class="fill"></div></div></div>
+                </div>
+
+                <div id="log-panel">
+                    <div class="log-title">System Log</div>
+                    <div id="log-content">System initialized. Awaiting waste input...</div>
+                </div>
+            </section>
+        </main>
+
+        <footer>
+            <div class="controls">
+                <button class="drop-btn plastic" onclick="simulateDrop('plastic')">Drop Plastic</button>
+                <button class="drop-btn metal" onclick="simulateDrop('metal')">Drop Metal</button>
+                <button class="drop-btn paper" onclick="simulateDrop('paper')">Drop Paper</button>
+                <button class="drop-btn glass" onclick="simulateDrop('glass')">Drop Glass</button>
+                <button class="drop-btn organic" onclick="simulateDrop('organic')">Drop Organic</button>
+                <button id="reset-btn" class="drop-btn reset" onclick="resetSimulation()">Reset Simulation</button>
+            </div>
+        </footer>
+    </div>
+
+    <div id="alert-overlay" class="hidden">
+        <div class="alert-box">
+            <div class="alert-header">WARNING</div>
+            <div id="alert-msg"></div>
+            <button onclick="closeAlert()">ACKNOWLEDGE</button>
+        </div>
+    </div>
+
+    <script src="script.js"></script>
+</body>
+</html>

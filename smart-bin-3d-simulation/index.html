@@ -1,0 +1,68 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Smart Bin 3D Simulation</title>
+    <link rel="stylesheet" href="style.css">
+    <script type="importmap">
+        {
+            "imports": {
+                "three": "https://unpkg.com/three@0.160.0/build/three.module.js",
+                "three/addons/": "https://unpkg.com/three@0.160.0/examples/jsm/"
+            }
+        }
+    </script>
+</head>
+<body>
+    <div id="ui-container">
+        <h1>Smart Bin 3D Simulation</h1>
+        
+        <div id="controls">
+            <button class="spawn-btn plastic" onclick="spawnWaste('plastic')">Drop Plastic</button>
+            <button class="spawn-btn metal" onclick="spawnWaste('metal')">Drop Metal</button>
+            <button class="spawn-btn paper" onclick="spawnWaste('paper')">Drop Paper</button>
+            <button class="spawn-btn glass" onclick="spawnWaste('glass')">Drop Glass</button>
+            <button class="spawn-btn organic" onclick="spawnWaste('organic')">Drop Organic</button>
+            <button id="reset-btn" onclick="resetSimulation()">Reset Simulation</button>
+        </div>
+
+        <div id="stats-panel">
+            <div class="stat-item">
+                <span>Plastic:</span>
+                <div class="progress-bar"><div id="fill-plastic" class="progress-fill plastic-bg"></div></div>
+                <span id="label-plastic">0%</span>
+            </div>
+            <div class="stat-item">
+                <span>Metal:</span>
+                <div class="progress-bar"><div id="fill-metal" class="progress-fill metal-bg"></div></div>
+                <span id="label-metal">0%</span>
+            </div>
+            <div class="stat-item">
+                <span>Paper:</span>
+                <div class="progress-bar"><div id="fill-paper" class="progress-fill paper-bg"></div></div>
+                <span id="label-paper">0%</span>
+            </div>
+            <div class="stat-item">
+                <span>Glass:</span>
+                <div class="progress-bar"><div id="fill-glass" class="progress-fill glass-bg"></div></div>
+                <span id="label-glass">0%</span>
+            </div>
+            <div class="stat-item">
+                <span>Organic:</span>
+                <div class="progress-bar"><div id="fill-organic" class="progress-fill organic-bg"></div></div>
+                <span id="label-organic">0%</span>
+            </div>
+        </div>
+
+        <div id="status-message">Ready to segregate...</div>
+        <div id="footer">all copyright reserved by SortWise</div>
+    </div>
+
+    <div id="warning-popup" class="hidden">
+        <p id="warning-text">Compartment almost full – collection required.</p>
+    </div>
+
+    <script type="module" src="script.js"></script>
+</body>
+</html>
