@@ -1,0 +1,190 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <meta name="description" content="SortWise Admin Dashboard — Monitor district waste accuracy, manage households, and levy fines.">
+  <title>Admin Dashboard — SortWise</title>
+  <link rel="stylesheet" href="css/style.css">
+</head>
+<body>
+
+  <!-- ═══════════ NAVBAR ═══════════ -->
+  <header class="navbar">
+    <div class="navbar-inner">
+      <a href="Home.html" class="navbar-brand">
+        <svg width="32" height="32" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M11 20A7 7 0 0 1 9.8 6.9C15.5 4.9 17 3.1 17 3.1s2.4 6 1.2 12.3A7 7 0 0 1 11 20z"/><path d="M11.7 7.5a4 4 0 0 0-1 8.7"/></svg>
+        Sort<span class="brand-highlight">Wise</span>
+      </a>
+      <nav class="nav-links">
+        <a href="Home.html">Home</a>
+        <a href="UserLogin.html">User Portal</a>
+        <a href="AdminLogin.html">Admin Portal</a>
+        <a href="Home.html" class="btn btn-outline btn-sm nav-signout">Sign Out</a>
+      </nav>
+      <button id="mobile-menu-btn" class="mobile-menu-btn" aria-label="Toggle menu">
+        <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><line x1="3" y1="12" x2="21" y2="12"/><line x1="3" y1="6" x2="21" y2="6"/><line x1="3" y1="18" x2="21" y2="18"/></svg>
+      </button>
+    </div>
+    <div id="mobile-nav" class="mobile-nav">
+      <a href="Home.html">Home</a>
+      <a href="UserLogin.html">User Portal</a>
+      <a href="AdminLogin.html">Admin Portal</a>
+      <a href="Home.html">Sign Out</a>
+    </div>
+  </header>
+
+  <!-- ═══════════ DASHBOARD ═══════════ -->
+  <main class="dashboard">
+    <div class="dashboard-inner">
+
+      <!-- Header Banner -->
+      <div class="dash-header dash-header-admin">
+        <div class="dash-header-orb"></div>
+        <div>
+          <h1>Facility Dashboard</h1>
+          <p class="dash-header-sub">
+            <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M21 10c0 7-9 13-9 13s-9-6-9-13a9 9 0 0 1 18 0z"/><circle cx="12" cy="10" r="3"/></svg>
+            Global Municipality Monitoring
+          </p>
+        </div>
+        <div class="dash-live-badge">
+          <span class="dash-live-dot"></span>
+          System Live
+        </div>
+      </div>
+
+      <!-- Stat Cards Row -->
+      <div class="stat-cards">
+        <!-- Total Households -->
+        <div class="stat-card" style="border-left-color: #292421;">
+          <div class="stat-card-body">
+            <div>
+              <p class="stat-card-label">Total Households</p>
+              <p class="stat-card-value">12,450</p>
+            </div>
+            <div class="stat-card-icon">
+              <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2"/><circle cx="9" cy="7" r="4"/><path d="M23 21v-2a4 4 0 0 0-3-3.87"/><path d="M16 3.13a4 4 0 0 1 0 7.75"/></svg>
+            </div>
+          </div>
+          <div class="stat-card-trend">
+            <span class="trend-up">+12%</span>
+            <span class="trend-label">vs last week</span>
+          </div>
+        </div>
+
+        <!-- Avg. Accuracy -->
+        <div class="stat-card" style="border-left-color: #7A958F;">
+          <div class="stat-card-body">
+            <div>
+              <p class="stat-card-label">Avg. Accuracy</p>
+              <p class="stat-card-value">84.5%</p>
+            </div>
+            <div class="stat-card-icon" style="color: #7A958F;">
+              <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M22 11.08V12a10 10 0 1 1-5.93-9.14"/><polyline points="22 4 12 14.01 9 11.01"/></svg>
+            </div>
+          </div>
+          <div class="stat-card-trend">
+            <span class="trend-up">+2.1%</span>
+            <span class="trend-label">vs last week</span>
+          </div>
+        </div>
+
+        <!-- Contamination Rate -->
+        <div class="stat-card" style="border-left-color: #D9899F;">
+          <div class="stat-card-body">
+            <div>
+              <p class="stat-card-label">Contamination Rate</p>
+              <p class="stat-card-value">15.5%</p>
+            </div>
+            <div class="stat-card-icon" style="color: #D9899F;">
+              <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M10.29 3.86L1.82 18a2 2 0 0 0 1.71 3h16.94a2 2 0 0 0 1.71-3L13.71 3.86a2 2 0 0 0-3.42 0z"/><line x1="12" y1="9" x2="12" y2="13"/><line x1="12" y1="17" x2="12.01" y2="17"/></svg>
+            </div>
+          </div>
+          <div class="stat-card-trend">
+            <span class="trend-down">-1.2%</span>
+            <span class="trend-label">vs last week</span>
+          </div>
+        </div>
+
+        <!-- Active Fines -->
+        <div class="stat-card" style="border-left-color: #ef4444;">
+          <div class="stat-card-body">
+            <div>
+              <p class="stat-card-label">Active Fines</p>
+              <p class="stat-card-value">342</p>
+            </div>
+            <div class="stat-card-icon" style="color: #ef4444;">
+              <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z"/><line x1="12" y1="8" x2="12" y2="12"/><line x1="12" y1="16" x2="12.01" y2="16"/></svg>
+            </div>
+          </div>
+          <div class="stat-card-trend">
+            <span class="trend-up">+15</span>
+            <span class="trend-label">vs last week</span>
+          </div>
+        </div>
+      </div>
+
+      <!-- Chart + Table Row -->
+      <div class="grid lg-grid-cols-3" style="gap: 2rem;">
+
+        <!-- District Chart -->
+        <div class="card card-shadow-md chart-card lg-col-span-1">
+          <div class="card-header">
+            <h3 class="card-title">District Accuracy</h3>
+          </div>
+          <div class="card-content">
+            <div class="chart-container">
+              <canvas id="admin-chart"></canvas>
+            </div>
+          </div>
+        </div>
+
+        <!-- Household Monitoring Table -->
+        <div class="card card-shadow-md table-card lg-col-span-2">
+          <div class="table-header">
+            <div>
+              <h3 class="card-title">Household Monitoring</h3>
+              <p>Review separation accuracy and manage penalties.</p>
+            </div>
+            <div class="search-box">
+              <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="11" cy="11" r="8"/><line x1="21" y1="21" x2="16.65" y2="16.65"/></svg>
+              <input id="household-search" type="text" class="search-input" placeholder="Search household...">
+            </div>
+          </div>
+          <div style="overflow-x: auto;">
+            <table class="data-table">
+              <thead>
+                <tr>
+                  <th>Household</th>
+                  <th>Total / Correct</th>
+                  <th>Incorrect</th>
+                  <th>Accuracy</th>
+                  <th style="text-align:center;">Action</th>
+                </tr>
+              </thead>
+              <tbody id="household-tbody">
+                <!-- Rendered by script.js -->
+              </tbody>
+            </table>
+          </div>
+        </div>
+      </div>
+
+    </div>
+  </main>
+
+  <!-- ═══════════ FOOTER ═══════════ -->
+  <footer class="footer">
+    <div class="footer-inner">
+      <div class="footer-brand">
+        <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="#BAE0DA" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M11 20A7 7 0 0 1 9.8 6.9C15.5 4.9 17 3.1 17 3.1s2.4 6 1.2 12.3A7 7 0 0 1 11 20z"/><path d="M11.7 7.5a4 4 0 0 0-1 8.7"/></svg>
+        SortWise
+      </div>
+      <p class="footer-copy">&copy; 2026 SortWise Technologies. All rights reserved.</p>
+    </div>
+  </footer>
+
+  <script src="js/script.js"></script>
+</body>
+</html>

@@ -1,0 +1,98 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <meta name="description" content="SortWise User Login — Sign in to your household waste management portal.">
+  <title>User Login — SortWise</title>
+  <link rel="stylesheet" href="css/style.css">
+</head>
+<body>
+
+  <!-- ═══════════ NAVBAR ═══════════ -->
+  <header class="navbar">
+    <div class="navbar-inner">
+      <a href="Home.html" class="navbar-brand">
+        <svg width="32" height="32" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M11 20A7 7 0 0 1 9.8 6.9C15.5 4.9 17 3.1 17 3.1s2.4 6 1.2 12.3A7 7 0 0 1 11 20z"/><path d="M11.7 7.5a4 4 0 0 0-1 8.7"/></svg>
+        Sort<span class="brand-highlight">Wise</span>
+      </a>
+      <nav class="nav-links">
+        <a href="Home.html">Home</a>
+        <a href="UserLogin.html">User Portal</a>
+        <a href="AdminLogin.html">Admin Portal</a>
+      </nav>
+      <button id="mobile-menu-btn" class="mobile-menu-btn" aria-label="Toggle menu">
+        <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><line x1="3" y1="12" x2="21" y2="12"/><line x1="3" y1="6" x2="21" y2="6"/><line x1="3" y1="18" x2="21" y2="18"/></svg>
+      </button>
+    </div>
+    <div id="mobile-nav" class="mobile-nav">
+      <a href="Home.html">Home</a>
+      <a href="UserLogin.html">User Portal</a>
+      <a href="AdminLogin.html">Admin Portal</a>
+    </div>
+  </header>
+
+  <!-- ═══════════ LOGIN CARD ═══════════ -->
+  <main class="login-page login-page-user">
+    <div class="card login-card login-card-user card-shadow-xl">
+
+      <div class="login-header">
+        <div class="login-icon-box login-icon-user">
+          <svg width="32" height="32" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M11 20A7 7 0 0 1 9.8 6.9C15.5 4.9 17 3.1 17 3.1s2.4 6 1.2 12.3A7 7 0 0 1 11 20z"/><path d="M11.7 7.5a4 4 0 0 0-1 8.7"/></svg>
+        </div>
+        <h2>Welcome Back</h2>
+        <p>Sign in to your household portal</p>
+      </div>
+
+      <div class="login-body">
+        <form class="login-form" id="user-login-form">
+          <div class="form-group">
+            <label for="email" class="form-label">Email address</label>
+            <input id="email" name="email" type="email" autocomplete="email" required class="form-input" style="background: #fff;" placeholder="user@household.com">
+          </div>
+
+          <div class="form-group">
+            <label for="password" class="form-label">Password</label>
+            <input id="password" name="password" type="password" autocomplete="current-password" required class="form-input" style="background: #fff;" placeholder="••••••••">
+          </div>
+
+          <div class="login-actions">
+            <label>
+              <input type="checkbox" class="form-checkbox" name="remember-me"> Remember me
+            </label>
+            <a href="#">Forgot password?</a>
+          </div>
+
+          <button type="submit" class="btn btn-primary w-full" style="height: 3rem; font-size: 1.125rem;">
+            Sign in
+          </button>
+        </form>
+
+        <div class="login-footer">
+          <span>Don't have an account? </span>
+          <a href="#">Register your household</a>
+        </div>
+      </div>
+    </div>
+  </main>
+
+  <!-- ═══════════ FOOTER ═══════════ -->
+  <footer class="footer">
+    <div class="footer-inner">
+      <div class="footer-brand">
+        <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="#BAE0DA" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M11 20A7 7 0 0 1 9.8 6.9C15.5 4.9 17 3.1 17 3.1s2.4 6 1.2 12.3A7 7 0 0 1 11 20z"/><path d="M11.7 7.5a4 4 0 0 0-1 8.7"/></svg>
+        SortWise
+      </div>
+      <p class="footer-copy">&copy; 2026 SortWise Technologies. All rights reserved.</p>
+    </div>
+  </footer>
+
+  <script src="js/script.js"></script>
+  <script>
+    document.getElementById('user-login-form').addEventListener('submit', function(e) {
+      e.preventDefault();
+      window.location.href = 'UserDashboard.html';
+    });
+  </script>
+</body>
+</html>
