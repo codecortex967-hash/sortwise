@@ -60,15 +60,16 @@ async function detectWaste(imageFile) {
 
 // ── UI Helpers for the Upload Widget ──
 
-/**
- * Initialize the AI waste identifier upload widget on UserDashboard.
- */
 function initWasteIdentifier() {
   const uploadZone = document.getElementById('upload-zone');
-  const fileInput = document.getElementById('waste-image-input');
+  const dragDropZone = document.getElementById('drag-drop-zone');
+  const cameraBtn = document.getElementById('camera-btn');
+  const galleryBtn = document.getElementById('gallery-btn');
+  const cameraInput = document.getElementById('waste-camera-input');
+  const galleryInput = document.getElementById('waste-gallery-input');
   const previewArea = document.getElementById('preview-area');
   const previewImg = document.getElementById('preview-img');
-  const removeBtn = document.getElementById('preview-remove');
+  const retakeBtn = document.getElementById('preview-retake');
   const analyzeBtn = document.getElementById('analyze-btn');
   const resultBox = document.getElementById('result-box');
 
@@ -76,36 +77,45 @@ function initWasteIdentifier() {
 
   let currentFile = null;
 
-  // Click to upload
-  uploadZone.addEventListener('click', () => fileInput.click());
-
-  // File selected
-  fileInput.addEventListener('change', (e) => {
+  // File Select Handler
+  function handleFileSelect(e) {
     const file = e.target.files[0];
     if (file) showPreview(file);
-  });
+    e.target.value = '';
+  }
 
-  // Drag & Drop
-  uploadZone.addEventListener('dragover', (e) => {
-    e.preventDefault();
-    uploadZone.style.background = 'rgba(122, 149, 143, 0.08)';
-  });
+  // Camera Option
+  if (cameraBtn) cameraBtn.addEventListener('click', () => cameraInput.click());
+  if (cameraInput) cameraInput.addEventListener('change', handleFileSelect);
 
-  uploadZone.addEventListener('dragleave', () => {
-    uploadZone.style.background = '';
-  });
+  // Gallery Option
+  if (galleryBtn) galleryBtn.addEventListener('click', () => galleryInput.click());
+  if (galleryInput) galleryInput.addEventListener('change', handleFileSelect);
 
-  uploadZone.addEventListener('drop', (e) => {
-    e.preventDefault();
-    uploadZone.style.background = '';
-    const file = e.dataTransfer.files[0];
-    if (file && file.type.startsWith('image/')) showPreview(file);
-  });
+  // Drag & Drop Zone Fallback
+  if (dragDropZone) {
+    dragDropZone.addEventListener('click', () => galleryInput.click());
+    dragDropZone.addEventListener('dragover', (e) => {
+      e.preventDefault();
+      dragDropZone.style.background = 'rgba(122, 149, 143, 0.08)';
+    });
+    dragDropZone.addEventListener('dragleave', () => {
+      dragDropZone.style.background = '';
+    });
+    dragDropZone.addEventListener('drop', (e) => {
+      e.preventDefault();
+      dragDropZone.style.background = '';
+      const file = e.dataTransfer.files[0];
+      if (file && file.type.startsWith('image/')) showPreview(file);
+    });
+  }
 
-  // Remove preview
-  removeBtn.addEventListener('click', () => {
-    resetUpload();
-  });
+  // Retake Preview
+  if (retakeBtn) {
+    retakeBtn.addEventListener('click', () => {
+      resetUpload();
+    });
+  }
 
   // Analyze button
   analyzeBtn.addEventListener('click', async () => {
@@ -202,7 +212,8 @@ function initWasteIdentifier() {
 
   function resetUpload() {
     currentFile = null;
-    fileInput.value = '';
+    if (cameraInput) cameraInput.value = '';
+    if (galleryInput) galleryInput.value = '';
     previewImg.src = '';
     uploadZone.style.display = 'flex';
     previewArea.style.display = 'none';
