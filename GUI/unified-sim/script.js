@@ -5,8 +5,8 @@ import { OrbitControls } from 'three/addons/controls/OrbitControls.js';
 const CONFIG = {
     fillLevels: { plastic: 0, metal: 0, paper: 0, glass: 0, organic: 0 },
     colors: {
-        plastic: '#0088ff', metal: '#888888', paper: '#ffd700', 
-        glass: '#00d4ff', organic: '#44cc44', idle: '#00f2ff'
+        plastic: '#3b82f6', metal: '#64748b', paper: '#eab308', 
+        glass: '#06b6d4', organic: '#22c55e', idle: '#7A958F'
     },
     xOffsets: [-2.4, -1.2, 0, 1.2, 2.4],
     categories: ['plastic', 'metal', 'paper', 'glass', 'organic']
@@ -21,8 +21,8 @@ let activeWaste = [];
 function init3D() {
     const container = document.getElementById('canvas-container');
     scene = new THREE.Scene();
-    scene.background = new THREE.Color(0x0a1025);
-    scene.fog = new THREE.Fog(0x0a1025, 10, 50);
+    scene.background = new THREE.Color(0xF2E7DD);
+    scene.fog = new THREE.Fog(0xF2E7DD, 10, 50);
 
     camera = new THREE.PerspectiveCamera(50, container.clientWidth / container.clientHeight, 0.1, 1000);
     camera.position.set(0, 10, 15);

@@ -249,15 +249,16 @@ async function initAdminDashboard() {
   if (window.auth?.supabase?.value && dbUsersCache.length === 0) {
     try {
       const { data, error } = await window.auth.supabase.value
-        .from('users')
+        .from('profiles')
         .select('*')
         .order('created_at', { ascending: false });
 
       if (!error && data) {
         dbUsersCache = data.map(u => ({
-          id: u.user_id,
+          id: u.id,
           name: u.full_name || 'Anonymous User',
           email: u.email,
+          city: u.city || 'Unknown',
           role: u.role,
           created: new Date(u.created_at).toLocaleDateString(),
           // Mock data for UI visual completion since full reporting backend isn't mapped
@@ -313,6 +314,9 @@ async function initAdminDashboard() {
             <td>
               <div class="text-sm">${user.email}</div>
               <div class="text-xs text-gray font-medium">Joined: ${user.created}</div>
+            </td>
+            <td>
+              <div class="text-sm">${user.city}</div>
             </td>
             <td>
               ${finesBadge}

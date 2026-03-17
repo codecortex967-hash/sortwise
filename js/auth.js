@@ -24,17 +24,19 @@
 
   const authModule = {
     /**
-     * Sign up a new user and sync with 'users' table.
+     * Sign up a new user and sync with 'profiles' table.
      */
-    async signUp(fullName, email, password) {
-      console.log('Attempting signUp for:', email);
+    async signUp(fullName, email, password, city, role = 'user') {
+      console.log(`Attempting signUp for: ${email} with role: ${role}`);
       const supabase = getClient();
       const { data, error } = await supabase.auth.signUp({ 
         email, 
         password,
         options: {
           data: {
-            full_name: fullName
+            full_name: fullName,
+            city: city,
+            role: role // Store in auth metadata as well
           }
         }
       });
@@ -51,15 +53,16 @@
         }
 
         // Run database sync in background
-        supabase.from('users').upsert({
-          user_id: data.user.id,
+        supabase.from('profiles').upsert({
+          id: data.user.id,
           email: data.user.email,
           full_name: fullName,
-          role: 'user',
+          city: city,
+          role: role,
           created_at: new Date().toISOString()
-        }, { onConflict: 'user_id' }).then(({ error: dbErr }) => {
-          if (dbErr) console.error('Database Sync Error:', dbErr);
-          else console.log('Database sync successful');
+        }).then(({ error: upsertErr }) => {
+          if (upsertErr) console.error('Profile sync error:', upsertErr);
+          else console.log('Profile sync complete.');
         });
       }
 
@@ -79,11 +82,21 @@
         if (res.error.message.includes('Email not confirmed')) {
           res.error.message = 'Please check your email and confirm your account before logging in.';
         }
-      } else if (res.data.session) {
-        console.log('SignIn success.');
-        // Fetch role
-        const { data: userData } = await supabase.from('users').select('role').eq('user_id', res.data.user.id).single();
-        res.role = userData?.role || 'user';
+        console.log('SignIn success. User ID:', res.data.user.id);
+        // Fetch profile and role
+        const { data: userData, error: profileError } = await this.getUserProfile(res.data.user.id, res.data.user.email);
+        if (profileError) console.error('SignIn Profile Fetch Error:', profileError);
+        
+        const role = userData?.role || 'user';
+        console.log(`SignIn determined role from database: "${role}"`);
+        res.role = role;
+
+        // Optionally handle redirection if on an auth page
+        const currentPath = window.location.pathname;
+        if (currentPath.includes('login.html') || currentPath.includes('UserLogin.html') || currentPath.includes('AdminLogin.html')) {
+          console.log(`Redirecting from auth page based on role: ${role}`);
+          this.redirectUserByRole(role);
+        }
       }
 
       return res;
@@ -133,20 +146,21 @@
         if (session) {
           document.body.classList.add('authenticated');
           
-          // Fetch user role
-          const { data: userData } = await supabase.from('users').select('role').eq('user_id', session.user.id).single();
+          // Fetch user profile and role from profiles table
+          const { data: userData } = await this.getUserProfile(session.user.id, session.user.email);
           const role = userData?.role || 'user';
           
           // Protect admin dashboard
           if (isAdminPath && role !== 'admin') {
-            window.location.href = 'UserDashboard.html';
+            this.redirectUserByRole(role);
             return session;
           }
 
-          // Legacy dashboard redirect
-          if (currentPath.endsWith('dashboard.html') && !currentPath.includes('User') && !currentPath.includes('Admin')) {
-            window.location.href = role === 'admin' ? 'AdminDashboard.html' : 'UserDashboard.html';
-            return session;
+          // If on a generic auth page or Home, redirect to appropriate dashboard
+          const isGenericAuthPage = ['login.html', 'UserLogin.html', 'AdminLogin.html', 'signup.html'].some(p => currentPath.includes(p));
+          if (isGenericAuthPage || currentPath.endsWith('/') || currentPath.endsWith('Home.html') || currentPath.endsWith('index.html')) {
+            // Only redirect if explicitly on an auth page, not every page load
+            if (isGenericAuthPage) this.redirectUserByRole(role);
           }
         } else {
           document.body.classList.remove('authenticated');
@@ -181,15 +195,14 @@
           const isProtectedPath = ['dashboard.html', 'UserDashboard.html', 'AdminDashboard.html'].some(p => currentPath.includes(p));
 
           if (event === 'SIGNED_OUT' && isProtectedPath) {
-            window.location.href = 'login.html';
+            window.location.href = 'UserLogin.html';
           } else if (event === 'SIGNED_IN') {
-            const isGenericAuthPage = (currentPath.endsWith('login.html') || currentPath.endsWith('signup.html')) &&
-              !currentPath.includes('User') && !currentPath.includes('Admin');
+            const isGenericAuthPage = (currentPath.includes('login.html') || currentPath.includes('signup.html') || 
+                                       currentPath.includes('UserLogin.html') || currentPath.includes('AdminLogin.html'));
               
             if (isGenericAuthPage) {
-              supabase.from('users').select('role').eq('user_id', session.user.id).single().then(({data}) => {
-                const role = data?.role || 'user';
-                window.location.href = role === 'admin' ? 'AdminDashboard.html' : 'UserDashboard.html';
+              this.getUserProfile(session.user.id, session.user.email).then(({data}) => {
+                this.redirectUserByRole(data?.role || 'user');
               });
             }
           }
@@ -200,6 +213,58 @@
         document.addEventListener('DOMContentLoaded', () => {
           try { this.init(); } catch (e) { }
         });
+      }
+    },
+
+    /**
+     * Fetch user profile from 'profiles' table or create it if missing.
+     */
+    async getUserProfile(userId, email) {
+      console.log(`Fetching profile for user: ${userId} (${email})`);
+      const supabase = getClient();
+      let { data, error } = await supabase.from('profiles').select('*').eq('id', userId).single();
+
+      if (error) {
+        if (error.code === 'PGRST116') { // Row not found
+          console.warn('Profile NOT FOUND in database. Creating basic profile...');
+          const newProfile = {
+            id: userId,
+            email: email,
+            full_name: email.split('@')[0], // Fallback to email username
+            city: 'Unknown',
+            role: 'user',
+            created_at: new Date().toISOString()
+          };
+          const { data: createdData, error: createErr } = await supabase.from('profiles').insert(newProfile).select().single();
+          if (!createErr) {
+            console.log('Profile created successfully:', createdData);
+            return { data: createdData, error: null };
+          }
+          console.error('Failed to create fallback profile:', createErr);
+          return { data: null, error: createErr };
+        } else {
+          console.error('Database error fetching profile:', error);
+          // Return the error so the caller knows it wasn't just "not found"
+        }
+      }
+
+      if (data) {
+        console.log('Profile fetched from database:', data);
+      }
+      return { data, error };
+    },
+
+    /**
+     * Centralized redirection logic based on user role.
+     */
+    redirectUserByRole(role) {
+      console.log(`>>> REDIRECT DECISION: Role is "${role}"`);
+      if (role === 'admin') {
+        console.log('Redirecting to Admin Dashboard...');
+        window.location.href = 'AdminDashboard.html';
+      } else {
+        console.log('Redirecting to User Dashboard...');
+        window.location.href = 'UserDashboard.html';
       }
     }
   };

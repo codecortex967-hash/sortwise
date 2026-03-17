@@ -12,6 +12,7 @@ class SmartBinSimulation:
         self.root.title("Smart Bin Attachment Simulation")
         self.root.geometry("700x600")
         self.root.minsize(700, 600)
+        self.root.configure(bg="#F2E7DD")
         
         # Configure main window grid
         self.root.columnconfigure(0, weight=1)
@@ -25,9 +26,9 @@ class SmartBinSimulation:
 
         # Category Colors
         self.cat_colors = {
-            "Recyclable": "#00BFFF", # Deep Sky Blue
-            "Organic": "#3CB371",     # Medium Sea Green
-            "Hazardous": "#DC3545"   # Red
+            "Recyclable": "#BAE0DA", # Secondary (Light Blue/Mint)
+            "Organic": "#7A958F",     # Primary (Sage Green)
+            "Hazardous": "#D9899F"   # Accent (Pink/Red)
         }
 
         # Style configuration
@@ -37,16 +38,17 @@ class SmartBinSimulation:
         except tk.TclError:
             pass # fallback to default if clam is not available
             
-        style.configure("Title.TLabel", font=("Segoe UI", 24, "bold"), padding=15, foreground="#2C3E50")
-        style.configure("Section.TFrame", relief="solid", borderwidth=1, background="#F8F9FA")
-        style.configure("SectionTitle.TLabel", font=("Segoe UI", 13, "bold"), padding=8, background="#34495E", foreground="white")
+        style.configure("Title.TLabel", font=("Segoe UI", 24, "bold"), padding=15, background="#F2E7DD", foreground="#292421")
+        style.configure("Section.TFrame", relief="solid", borderwidth=1, background="#ffffff")
+        style.configure("SectionTitle.TLabel", font=("Segoe UI", 13, "bold"), padding=8, background="#292421", foreground="#ffffff")
+        style.configure("TFrame", background="#F2E7DD")
 
         # 1. Main Title
-        title_label = ttk.Label(self.root, text="Smart Bin Attachment Simulation", style="Title.TLabel")
+        title_label = ttk.Label(self.root, text="SortWise Smart Bin Processing Simulation", style="Title.TLabel")
         title_label.grid(row=0, column=0, pady=(10, 0), sticky="n")
 
         # Main Content Frame
-        content_frame = ttk.Frame(self.root, padding=10)
+        content_frame = ttk.Frame(self.root, padding=10, style="TFrame")
         content_frame.grid(row=1, column=0, sticky="nsew")
         
         # Configure content frame grid
@@ -61,7 +63,7 @@ class SmartBinSimulation:
         ttk.Label(image_frame, text="1. Waste Image Input", style="SectionTitle.TLabel").pack(anchor="n")
         
         # Placeholder for image
-        self.image_placeholder = ttk.Label(image_frame, text="[ Image Display Area ]", background="#e0e0e0", anchor="center")
+        self.image_placeholder = ttk.Label(image_frame, text="[ Image Display Area ]", background="#F2E7DD", foreground="#292421", anchor="center")
         self.image_placeholder.pack(expand=True, fill="both", padx=10, pady=10)
         
         btn_frame = ttk.Frame(image_frame)
@@ -75,7 +77,7 @@ class SmartBinSimulation:
         ttk.Label(detection_frame, text="2. Detection Result", style="SectionTitle.TLabel").pack(anchor="n")
         
         # Placeholder for results text
-        self.result_text = tk.Text(detection_frame, height=5, width=30, wrap="word", bg="#ffffff", font=("Consolas", 12), relief="solid", borderwidth=1)
+        self.result_text = tk.Text(detection_frame, height=5, width=30, wrap="word", bg="#ffffff", fg="#292421", font=("Consolas", 12), relief="solid", borderwidth=1)
         self.result_text.pack(expand=True, fill="both", padx=10, pady=10)
         
         self.result_text.insert("1.0", "Waiting for input...\n\nDetected Class: --\nConfidence Level: --%")
@@ -87,7 +89,7 @@ class SmartBinSimulation:
         ttk.Label(compartments_frame, text="3. Smart Bin Compartments", style="SectionTitle.TLabel").pack(anchor="n")
         
         # Placeholder for compartments visual state
-        comp_display = ttk.Frame(compartments_frame)
+        comp_display = tk.Frame(compartments_frame, bg="#ffffff")
         comp_display.pack(expand=True, fill="both", pady=10)
         comp_display.columnconfigure((0, 1, 2), weight=1)
         comp_display.rowconfigure(0, weight=1)
@@ -95,12 +97,12 @@ class SmartBinSimulation:
         # Example compartment representation
         categories = ["Recyclable", "Organic", "Hazardous"]
         for i, comp in enumerate(categories):
-            frame = ttk.Frame(comp_display, relief="ridge", borderwidth=3)
+            frame = tk.Frame(comp_display, relief="solid", borderwidth=1, bg="#ffffff")
             frame.grid(row=0, column=i, padx=5, sticky="nsew")
             
             # Simulated open/close status
             bg_color = self.cat_colors.get(comp, "#cccccc")
-            lbl = tk.Label(frame, text=comp, bg=bg_color, font=("Segoe UI", 11, "bold"), pady=5)
+            lbl = tk.Label(frame, text=comp, bg=bg_color, fg="#ffffff" if comp != "Recyclable" else "#292421", font=("Segoe UI", 11, "bold"), pady=5)
             lbl.pack(fill="x", side="top")
             
             status_lbl = tk.Label(frame, text="CLOSED", fg="#555555", bg="#f0f0f0", font=("Segoe UI", 10, "bold"))
@@ -113,18 +115,18 @@ class SmartBinSimulation:
         ttk.Label(fill_levels_frame, text="4. Bin Fill Levels", style="SectionTitle.TLabel").pack(anchor="n")
 
         # Placeholder for fill level progress bars
-        levels_display = ttk.Frame(fill_levels_frame)
+        levels_display = tk.Frame(fill_levels_frame, bg="#ffffff")
         levels_display.pack(expand=True, fill="both", pady=5)
         
         for comp in categories:
-            frame = ttk.Frame(levels_display)
+            frame = tk.Frame(levels_display, bg="#ffffff")
             frame.pack(fill="x", pady=5)
             # Reduce width of label slightly to fit all 5 and color code
-            lbl_title = tk.Label(frame, text=comp, width=10, font=("Segoe UI", 10, "bold"), bg=self.cat_colors.get(comp, "#cccccc"))
+            lbl_title = tk.Label(frame, text=comp, width=10, font=("Segoe UI", 10, "bold"), bg=self.cat_colors.get(comp, "#cccccc"), fg="#ffffff" if comp != "Recyclable" else "#292421")
             lbl_title.pack(side="left", padx=(0, 10))
             pb = ttk.Progressbar(frame, orient="horizontal", mode="determinate", value=0)
             pb.pack(side="left", expand=True, fill="x", padx=10)
-            lbl = ttk.Label(frame, text="0%", width=4)
+            lbl = tk.Label(frame, text="0%", width=4, bg="#ffffff", fg="#292421")
             lbl.pack(side="left")
             
             self.fill_levels[comp] = 0
@@ -138,13 +140,13 @@ class SmartBinSimulation:
         ttk.Separator(status_frame, orient="horizontal").pack(fill="x")
         
         self.status_var = tk.StringVar(value="System Status: Initialized and ready. Awaiting waste image.")
-        self.status_label = ttk.Label(status_frame, textvariable=self.status_var, padding=10, font=("Segoe UI", 12, "bold italic"), foreground="#28a745")
+        self.status_label = tk.Label(status_frame, textvariable=self.status_var, bg="#F2E7DD", fg="#7A958F", font=("Segoe UI", 12, "bold italic"), pady=10)
         self.status_label.pack(anchor="w", padx=10)
 
         # --- 6. Copyright Footer ---
-        footer_frame = ttk.Frame(self.root)
+        footer_frame = ttk.Frame(self.root, style="TFrame")
         footer_frame.grid(row=3, column=0, sticky="ew")
-        ttk.Label(footer_frame, text="© all copyright reserved by SortWise", font=("Segoe UI", 8), foreground="#7f8c8d").pack(side="right", padx=10, pady=2)
+        tk.Label(footer_frame, text="© all copyright reserved by SortWise", font=("Segoe UI", 8), bg="#F2E7DD", fg="#5A5451").pack(side="right", padx=10, pady=2)
 
         # Start UDP Listener
         self.root.after(100, self.start_udp_listener)

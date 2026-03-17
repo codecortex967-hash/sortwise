@@ -1,0 +1,112 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>EcoMap - Geo-Tagged Waste Mapping</title>
+    
+    <!-- Google Fonts -->
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Outfit:wght@300;400;600;700&display=swap" rel="stylesheet">
+    
+    <!-- Leaflet CSS -->
+    <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css" integrity="sha256-p4NxAoJBhIIN+hmNHrzRCf9tD/miZyoHS5obTRR9BMY=" crossorigin=""/>
+    
+    <link rel="stylesheet" href="style.css">
+</head>
+<body>
+
+    <!-- Main Container -->
+    <div class="app-container">
+        <!-- Sidebar Panel -->
+        <aside class="sidebar">
+            <div class="sidebar-header">
+                <h1>Geo-Waste Tracker</h1>
+                <p class="subtitle">Eco-friendly mapping & analytics</p>
+                <div id="status-panel" class="status-panel">
+                    <span id="db-status" class="dot"></span>
+                    <span id="db-status-text">Checking Database...</span>
+                </div>
+            </div>
+            <div class="actions">
+                <h3>Submit Waste Report</h3>
+                <p class="subtitle">Select the type of waste at your current location</p>
+                <div class="button-group">
+                    <button class="action-btn submit-btn" data-type="Plastic">♻️ Plastic</button>
+                    <button class="action-btn submit-btn" data-type="Organic">🍎 Organic</button>
+                    <button class="action-btn submit-btn" data-type="Metal">🥫 Metal</button>
+                </div>
+                
+                <div id="location-status" class="status-msg"></div>
+            </div>
+
+            <div class="actions heatmap-section">
+                <h3>Visualization</h3>
+                <div class="form-group" style="margin-bottom: 1rem;">
+                    <label for="filter-city">Select City</label>
+                    <select id="filter-city" class="action-btn" style="text-align: left; margin-bottom: 0.5rem; background-color: #f0f7ff; border-color: var(--primary);">
+                        <option value="Mumbai">Mumbai (Default)</option>
+                        <option value="Indore">Indore (Local Hub)</option>
+                    </select>
+
+                    <label for="filter-type">Filter by Type</label>
+                    <select id="filter-type" class="action-btn" style="text-align: left; margin-bottom: 0.5rem;">
+                        <option value="all">All Waste</option>
+                        <option value="Plastic">Plastic</option>
+                        <option value="Organic">Organic</option>
+                        <option value="Metal">Metal</option>
+                    </select>
+
+                    <label for="filter-time">Filter by Time</label>
+                    <select id="filter-time" class="action-btn" style="text-align: left;">
+                        <option value="all">Any Time</option>
+                        <option value="24h">Last 24 Hours</option>
+                        <option value="7d">Last 7 Days</option>
+                    </select>
+                </div>
+                <button id="load-heatmap-btn" class="action-btn heatmap-btn">🔥 Load Heatmap</button>
+            </div>
+            
+            <div class="actions analytics-section">
+                <h3>Admin Analytics</h3>
+                <div id="stats-container" class="stats-grid">
+                    <!-- Stats will be injected here -->
+                    <p class="subtitle">Fetching analytics...</p>
+                </div>
+                <div id="insights-container" class="insights-list">
+                    <!-- Insights will be injected here -->
+                </div>
+                <div class="button-group" style="margin-top: 1rem; flex-direction: column;">
+                    <button id="refresh-analytics-btn" class="action-btn">📊 Refresh Analytics</button>
+                    <button id="generate-demo-btn" class="action-btn" style="background: var(--secondary); margin-top: 0.5rem;">✨ Generate Demo Data</button>
+                </div>
+            </div>
+            
+            <div id="notification-area" class="notification-area"></div>
+        </aside>
+
+        <!-- Map Container -->
+        <main class="map-container">
+            <div id="map"></div>
+            <!-- Loading Overlay -->
+            <div id="map-loader" class="loader-overlay hidden">
+                <div class="spinner"></div>
+            </div>
+        </main>
+    </div>
+
+    <!-- Leaflet JS -->
+    <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js" integrity="sha256-20nQCchB9co0qIjJZRGuk2/Z9VM+kNiyxNV1lvTlZBo=" crossorigin=""></script>
+    
+    <!-- Heatmap Plugin -->
+    <script src="https://unpkg.com/leaflet.heat@0.2.0/dist/leaflet-heat.js"></script>
+
+    <!-- ========================================== -->
+    <!-- INTEGRATION POINT: Configuration -->
+    <!-- config.js contains the API_BASE_URL -->
+    <!-- ========================================== -->
+    <script src="config.js"></script>
+    <script src="script.js"></script>
+</body>
+</html>

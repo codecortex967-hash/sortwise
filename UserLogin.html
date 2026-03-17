@@ -162,8 +162,8 @@
           } else if (!data.session) {
             alert('Please confirm your email before logging in.');
           } else {
-            // Success! Redirect to dashboard based on role
-            window.location.href = role === 'admin' ? 'AdminDashboard.html' : 'UserDashboard.html';
+            // Role-based redirection is now handled by auth.js
+            console.log('Login successful, routing...');
           }
         }
       } catch (err) {

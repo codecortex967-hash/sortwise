@@ -49,9 +49,14 @@
 
       <div class="login-body">
         <form class="login-form" id="admin-login-form">
+          <div class="form-group" id="admin-name-group" style="display: none;">
+            <label for="admin-name" class="form-label">Full Name</label>
+            <input id="admin-name" name="admin-name" type="text" class="form-input" placeholder="Admin Name">
+          </div>
+
           <div class="form-group">
             <label for="admin-id" class="form-label">Admin ID / Email</label>
-            <input id="admin-id" name="admin-id" type="text" required class="form-input" placeholder="admin@municipality.gov">
+            <input id="admin-id" name="admin-id" type="email" required class="form-input" placeholder="admin@municipality.gov">
           </div>
 
           <div class="form-group">
@@ -62,6 +67,10 @@
           <button type="submit" class="btn btn-secondary w-full" style="height: 3rem; font-size: 1.125rem; margin-top: 0.5rem;">
             Authenticate
           </button>
+
+          <div class="login-footer" style="text-align: center; margin-top: 1.5rem; font-size: 0.875rem;">
+            <a href="#" id="admin-register-toggle" style="color: var(--secondary); font-weight: 600;">Request Admin Access / Register</a>
+          </div>
 
           <div class="login-back">
             <a href="Home.html">Return to Home</a>
@@ -88,38 +97,73 @@
   <script>
     const adminLoginForm = document.getElementById('admin-login-form');
     const submitBtn = adminLoginForm.querySelector('button[type="submit"]');
+    const registerToggle = document.getElementById('admin-register-toggle');
+    const nameGroup = document.getElementById('admin-name-group');
+    const nameInput = document.getElementById('admin-name');
+    const loginHeader = document.querySelector('.login-header h2');
+    const loginSubHeader = document.querySelector('.login-header p');
+
+    let isSignUpMode = false;
+
+    registerToggle.addEventListener('click', (e) => {
+      e.preventDefault();
+      isSignUpMode = !isSignUpMode;
+
+      if (isSignUpMode) {
+        loginHeader.textContent = 'Register Admin';
+        loginSubHeader.textContent = 'Create a new administrative account';
+        submitBtn.textContent = 'Register Admin';
+        registerToggle.textContent = 'Back to Login';
+        nameGroup.style.display = 'block';
+        nameInput.required = true;
+      } else {
+        loginHeader.textContent = 'Admin Control Panel';
+        loginSubHeader.textContent = 'Authorized personnel only';
+        submitBtn.textContent = 'Authenticate';
+        registerToggle.textContent = 'Request Admin Access / Register';
+        nameGroup.style.display = 'none';
+        nameInput.required = false;
+      }
+    });
 
     adminLoginForm.addEventListener('submit', async function(e) {
       e.preventDefault();
       
       const email = document.getElementById('admin-id').value;
       const password = document.getElementById('admin-password').value;
+      const fullName = nameInput.value;
       
       submitBtn.disabled = true;
-      submitBtn.textContent = 'Authenticating...';
+      submitBtn.textContent = isSignUpMode ? 'Registering...' : 'Authenticating...';
 
       try {
-        const { data, error } = await window.auth.signIn(email, password, 'admin');
-        
-        if (error) {
-          alert('Authentication Failed: ' + error.message);
-          submitBtn.disabled = false;
-          submitBtn.textContent = 'Authenticate';
-        } else if (!data.session) {
-          alert('Access Pending: Please check your email and confirm your admin account.');
-          submitBtn.disabled = false;
-          submitBtn.textContent = 'Authenticate';
+        if (isSignUpMode) {
+          const { data, error } = await window.auth.signUp(fullName, email, password, 'Unknown', 'admin');
+          if (error) {
+            alert('Registration Failed: ' + error.message);
+          } else if (!data.session) {
+            alert('Success! Please confirm your email to activate your admin account.');
+            registerToggle.click();
+          } else {
+            console.log('Admin registered and logged in.');
+          }
         } else {
-          // Hide sign-out buttons initially from navigation during transition
-          document.querySelectorAll('.nav-signout').forEach(btn => btn.style.display = 'none');
-          window.location.href = 'AdminDashboard.html';
+          const { data, error } = await window.auth.signIn(email, password, 'admin');
+          if (error) {
+            alert('Authentication Failed: ' + error.message);
+          } else if (!data.session) {
+            alert('Access Pending: Please check your email and confirm your admin account.');
+          } else {
+            console.log('Login successful, routing...');
+          }
         }
       } catch (err) {
-        console.error('Admin login crash:', err);
+        console.error('Admin auth crash:', err);
         alert('An unexpected error occurred. Please try again.');
-        submitBtn.disabled = false;
-        submitBtn.textContent = 'Authenticate';
       }
+      
+      submitBtn.disabled = false;
+      submitBtn.textContent = isSignUpMode ? 'Register Admin' : 'Authenticate';
     });
   </script>
 </body>
