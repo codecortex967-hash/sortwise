@@ -10,19 +10,34 @@
   <script src="js/auth.js"></script>
   <script>
     // UI update based on session
-    window.auth.checkAuthSession().then(session => {
+    window.auth.checkAuthSession().then(async session => {
       if (session) {
-        const userEmail = session.user.email;
-        const welcomeHeader = document.querySelector('.dash-header h1');
-        if (welcomeHeader) {
-          welcomeHeader.textContent = `Welcome back, ${userEmail.split('@')[0]}`;
+        // Fetch user profile data
+        const { data: userData, error: userErr } = await window.auth.supabase.value
+          .from('users')
+          .select('full_name, email, created_at')
+          .eq('user_id', session.user.id)
+          .single();
+
+        if (!userErr && userData) {
+          const welcomeHeader = document.querySelector('.dash-header h1');
+          if (welcomeHeader) {
+            const firstName = userData.full_name ? userData.full_name.split(' ')[0] : userData.email.split('@')[0];
+            welcomeHeader.textContent = `Welcome back, ${firstName}`;
+          }
+          
+          const dashSub = document.querySelector('.dash-header-sub');
+          if (dashSub) {
+            const joinedDate = new Date(userData.created_at).toLocaleDateString('en-US', { month: 'short', year: 'numeric' });
+            dashSub.innerHTML = `Household Portal • <strong>${userData.email}</strong> <br><span style="font-size: 0.85em; opacity: 0.8; margin-top: 4px; display: inline-block;">Member since ${joinedDate}</span>`;
+          }
         }
         fetchRecentScans(session.user.id);
       }
     });
 
     async function fetchRecentScans(userId) {
-      const { data, error } = await window.auth.supabase
+      const { data, error } = await window.auth.supabase.value
         .from('waste_logs')
         .select('*')
         .eq('user_id', userId)

@@ -97,7 +97,7 @@
       submitBtn.textContent = 'Authenticating...';
 
       try {
-        const { data, error } = await auth.signIn(email, password);
+        const { data, error, role } = await auth.signIn(email, password);
         
         if (error) {
           alert('Authentication Failed: ' + error.message);
@@ -108,7 +108,7 @@
           submitBtn.disabled = false;
           submitBtn.textContent = 'Authenticate';
         } else {
-          window.location.href = 'AdminDashboard.html';
+          window.location.href = role === 'admin' ? 'AdminDashboard.html' : 'UserDashboard.html';
         }
       } catch (err) {
         console.error('Admin login crash:', err);

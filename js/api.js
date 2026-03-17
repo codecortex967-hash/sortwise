@@ -3,6 +3,11 @@
  * Provides the detectWaste() function for image classification.
  */
 
+/**
+ * SortWise — AI Waste Detection API Integration
+ * Provides the detectWaste() function for image classification.
+ */
+
 // ── Configuration ──
 const API_CONFIG = {
   // Replace with your actual AI API endpoint

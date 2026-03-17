@@ -26,10 +26,18 @@
     /**
      * Sign up a new user and sync with 'users' table.
      */
-    async signUp(email, password) {
+    async signUp(fullName, email, password) {
       console.log('Attempting signUp for:', email);
       const supabase = getClient();
-      const { data, error } = await supabase.auth.signUp({ email, password });
+      const { data, error } = await supabase.auth.signUp({ 
+        email, 
+        password,
+        options: {
+          data: {
+            full_name: fullName
+          }
+        }
+      });
 
       if (error) {
         console.error('Supabase signUp error:', error);
@@ -46,6 +54,8 @@
         supabase.from('users').upsert({
           user_id: data.user.id,
           email: data.user.email,
+          full_name: fullName,
+          role: 'user',
           created_at: new Date().toISOString()
         }, { onConflict: 'user_id' }).then(({ error: dbErr }) => {
           if (dbErr) console.error('Database Sync Error:', dbErr);
@@ -57,7 +67,7 @@
     },
 
     /**
-     * Sign in an existing user.
+     * Sign in an existing user and fetch their role.
      */
     async signIn(email, password) {
       console.log('Attempting signIn for:', email);
@@ -69,8 +79,11 @@
         if (res.error.message.includes('Email not confirmed')) {
           res.error.message = 'Please check your email and confirm your account before logging in.';
         }
-      } else {
-        console.log('SignIn success. Session:', !!res.data.session);
+      } else if (res.data.session) {
+        console.log('SignIn success.');
+        // Fetch role
+        const { data: userData } = await supabase.from('users').select('role').eq('user_id', res.data.user.id).single();
+        res.role = userData?.role || 'user';
       }
 
       return res;
@@ -106,24 +119,42 @@
     },
 
     /**
-     * Check auth and handle redirection.
+     * Check auth and handle redirection, including role-based protection.
      */
     async checkAuthSession() {
       try {
+        const supabase = getClient();
         const { data } = await this.getSession();
         const session = data?.session;
         const currentPath = window.location.pathname;
         const isProtectedPath = ['dashboard.html', 'UserDashboard.html', 'AdminDashboard.html'].some(p => currentPath.includes(p));
+        const isAdminPath = currentPath.includes('AdminDashboard.html');
 
         if (session) {
           document.body.classList.add('authenticated');
+          
+          // Fetch user role
+          const { data: userData } = await supabase.from('users').select('role').eq('user_id', session.user.id).single();
+          const role = userData?.role || 'user';
+          
+          // Protect admin dashboard
+          if (isAdminPath && role !== 'admin') {
+            window.location.href = 'UserDashboard.html';
+            return session;
+          }
+
+          // Legacy dashboard redirect
+          if (currentPath.endsWith('dashboard.html') && !currentPath.includes('User') && !currentPath.includes('Admin')) {
+            window.location.href = role === 'admin' ? 'AdminDashboard.html' : 'UserDashboard.html';
+            return session;
+          }
         } else {
           document.body.classList.remove('authenticated');
+          if (isProtectedPath) {
+            window.location.href = 'login.html';
+          }
         }
 
-        if (isProtectedPath && !session) {
-          window.location.href = 'login.html';
-        }
         return session;
       } catch (err) {
         console.error('Auth Check Error:', err);
@@ -154,8 +185,12 @@
           } else if (event === 'SIGNED_IN') {
             const isGenericAuthPage = (currentPath.endsWith('login.html') || currentPath.endsWith('signup.html')) &&
               !currentPath.includes('User') && !currentPath.includes('Admin');
+              
             if (isGenericAuthPage) {
-              window.location.href = 'dashboard.html';
+              supabase.from('users').select('role').eq('user_id', session.user.id).single().then(({data}) => {
+                const role = data?.role || 'user';
+                window.location.href = role === 'admin' ? 'AdminDashboard.html' : 'UserDashboard.html';
+              });
             }
           }
         });

@@ -46,6 +46,11 @@
 
       <div class="login-body">
         <form class="login-form" id="user-login-form">
+          <div class="form-group" id="name-group" style="display: none;">
+            <label for="full-name" class="form-label">Full Name</label>
+            <input id="full-name" name="full_name" type="text" class="form-input" style="background: #fff;" placeholder="John Doe">
+          </div>
+
           <div class="form-group">
             <label for="email" class="form-label">Email address</label>
             <input id="email" name="email" type="email" autocomplete="email" required class="form-input" style="background: #fff;" placeholder="user@household.com">
@@ -104,22 +109,30 @@
       e.preventDefault();
       isSignUpMode = !isSignUpMode;
       
+      const nameGroup = document.getElementById('name-group');
+      const fullNameInput = document.getElementById('full-name');
+      
       if (isSignUpMode) {
         loginHeader.textContent = 'Create Account';
         loginSubHeader.textContent = 'Register your household with SortWise';
         submitBtn.textContent = 'Sign Up';
         registerLink.textContent = 'Already have an account? Login';
+        nameGroup.style.display = 'block';
+        fullNameInput.required = true;
       } else {
         loginHeader.textContent = 'Welcome Back';
         loginSubHeader.textContent = 'Sign in to your household portal';
         submitBtn.textContent = 'Sign in';
         registerLink.textContent = 'Register your household';
+        nameGroup.style.display = 'none';
+        fullNameInput.required = false;
       }
     });
 
     loginForm.addEventListener('submit', async function(e) {
       e.preventDefault();
       
+      const fullName = document.getElementById('full-name')?.value || '';
       const email = document.getElementById('email').value;
       const password = document.getElementById('password').value;
       
@@ -128,7 +141,7 @@
 
       try {
         if (isSignUpMode) {
-          const { data, error } = await auth.signUp(email, password);
+          const { data, error } = await auth.signUp(fullName, email, password);
           if (error) {
             alert('Signup Error: ' + error.message);
           } else {
@@ -141,14 +154,14 @@
             }
           }
         } else {
-          const { data, error } = await auth.signIn(email, password);
+          const { data, error, role } = await auth.signIn(email, password);
           if (error) {
             alert('Login Error: ' + error.message);
           } else if (!data.session) {
             alert('Please confirm your email before logging in.');
           } else {
-            // Success! Redirect to dashboard
-            window.location.href = 'UserDashboard.html';
+            // Success! Redirect to dashboard based on role
+            window.location.href = role === 'admin' ? 'AdminDashboard.html' : 'UserDashboard.html';
           }
         }
       } catch (err) {

@@ -34,6 +34,11 @@
         <div class="card-content">
           <form id="signup-form" class="flex flex-col gap-4">
             <div class="form-group">
+              <label for="full-name" class="form-label">Full Name</label>
+              <input type="text" id="full-name" class="form-input" placeholder="John Doe" required>
+            </div>
+            
+            <div class="form-group">
               <label for="email" class="form-label">Email Address</label>
               <input type="email" id="email" class="form-input" placeholder="you@example.com" required>
             </div>
@@ -85,6 +90,7 @@
     signupForm.addEventListener('submit', async (e) => {
       e.preventDefault();
       
+      const fullName = document.getElementById('full-name').value;
       const email = document.getElementById('email').value;
       const password = document.getElementById('password').value;
       const confirmPassword = document.getElementById('confirm-password').value;
@@ -100,7 +106,7 @@
       submitBtn.textContent = 'Creating Account...';
 
       try {
-        const { data, error } = await auth.signUp(email, password);
+        const { data, error } = await auth.signUp(fullName, email, password);
 
         if (error) {
           showMsg(error.message, 'error');
