@@ -16,7 +16,7 @@ const CATEGORY_MAP = {
   metal: ['metal', 'tin can', 'aluminum can', 'metal lid', 'can', 'foil', 'steel', 'tin'],
   paper: ['paper', 'newspaper', 'cardboard', 'paper cup', 'carton', 'box', 'magazine'],
   glass: ['glass', 'glass bottle', 'jar'],
-  organic: ['organic', 'banana peel', 'food waste', 'vegetables', 'leaves', 'food', 'peels', 'fruit', 'apple', 'scrap']
+  organic: ['organic', 'banana peel', 'food waste', 'vegetables', 'leaves', 'food', 'peels', 'fruit', 'apple', 'scrap','rubber']
 };
 
 /**
@@ -162,21 +162,6 @@ function initWasteIdentifier() {
     resultBox.style.display = 'none';
 
     const result = await detectWaste(currentFile);
-
-    // Persist calculation to database if user is logged in
-    const session = await window.auth.getSession();
-    if (session.session) {
-      const { error } = await window.auth.supabase
-        .from('waste_logs')
-        .insert({
-          user_id: session.session.user.id,
-          category: result.category,
-          suggestion: result.suggestion,
-          created_at: new Date().toISOString()
-        });
-      
-      if (error) console.error('Error logging waste:', error);
-    }
 
     analyzeBtn.style.display = 'none';
     resultBox.style.display = 'block';
