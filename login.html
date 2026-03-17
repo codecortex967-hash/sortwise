@@ -13,12 +13,17 @@
   <header class="navbar">
     <div class="navbar-inner">
       <a href="Home.html" class="navbar-brand">
-        <svg width="32" height="32" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M11 20A7 7 0 0 1 9.8 6.9C15.5 4.9 17 3.1 17 3.1s2.4 6 1.2 12.3A7 7 0 0 1 11 20z"/><path d="M11.7 7.5a4 4 0 0 0-1 8.7"/></svg>
-        Sort<span class="brand-highlight">Wise</span>
+        <img src="assets/SortWise_Logo.png" alt="SortWise Logo" style="height: 48px; width: auto; max-width: 160px; object-fit: contain;">
       </a>
+      <nav class="nav-links">
         <a href="Home.html">Home</a>
-        <a href="#" class="btn btn-outline btn-sm nav-signout">Sign Out</a>
       </nav>
+      <button id="mobile-menu-btn" class="mobile-menu-btn" aria-label="Toggle menu">
+        <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><line x1="3" y1="12" x2="21" y2="12"/><line x1="3" y1="6" x2="21" y2="6"/><line x1="3" y1="18" x2="21" y2="18"/></svg>
+      </button>
+    </div>
+    <div id="mobile-nav" class="mobile-nav">
+      <a href="Home.html">Home</a>
     </div>
   </header>
 
@@ -26,13 +31,16 @@
   <main class="login-page">
     <div class="container flex justify-center items-center" style="min-height: 80vh;">
       <div class="card login-card card-shadow-xl" style="width: 100%; max-width: 400px;">
-        <div class="card-header text-center">
+        <div class="login-header text-center">
+          <div class="login-icon-box login-icon-user">
+            <svg width="28" height="28" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M5.52 19c.64-2.2 1.84-3 3.22-3h6.52c1.38 0 2.58.8 3.22 3"/><circle cx="12" cy="10" r="3"/><circle cx="12" cy="12" r="10"/></svg>
+          </div>
           <h2 class="card-title" style="font-size: 1.5rem; margin-bottom: 0.5rem;">Welcome Back</h2>
           <p style="color: #6b7280; font-size: 0.875rem;">Sign in to your SortWise account</p>
         </div>
 
-        <div class="card-content">
-          <form id="login-form" class="flex flex-col gap-4">
+        <div class="login-body">
+          <form id="login-form" class="login-form">
             <div class="form-group">
               <label for="email" class="form-label">Email Address</label>
               <input type="email" id="email" class="form-input" placeholder="you@example.com" required>
@@ -47,7 +55,7 @@
               Sign In
             </button>
             
-            <div id="error-msg" class="text-xs text-red-500 text-center" style="color: #d4183d; display: none;"></div>
+            <div id="error-msg" class="text-xs text-red-500 text-center" style="color: #d4183d; display: none; margin-top: 1rem;"></div>
           </form>
 
           <div class="text-center" style="margin-top: 1.5rem; font-size: 0.875rem;">
@@ -59,7 +67,7 @@
     </div>
   </main>
 
-  <!-- ═══════════ FOOTER ═══════════ -->
+  <!--  FOOTER  -->
   <footer class="footer">
     <div class="footer-inner">
       <div class="footer-brand">

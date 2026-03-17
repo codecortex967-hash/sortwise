@@ -77,6 +77,7 @@ function drawBarChart(canvasId, config) {
     datasets,
     orientation = 'vertical', // 'vertical' or 'horizontal'
     stacked = true,
+    maxVal: explicitMax,
   } = config;
 
   const padding = { top: 30, right: 30, bottom: 60, left: orientation === 'horizontal' ? 90 : 50 };
@@ -90,7 +91,13 @@ function drawBarChart(canvasId, config) {
     datasets.forEach((ds) => { sum += item[ds.key] || 0; });
     if (sum > maxVal) maxVal = sum;
   });
-  maxVal = Math.ceil(maxVal / 100) * 100 || 100;
+  
+  if (explicitMax && maxVal < explicitMax) {
+    maxVal = explicitMax;
+  } else {
+    maxVal = Math.ceil(maxVal / 10) * 10 || 10;
+    // ensure maxVal is at least 10 for better visuals when numbers are low
+  }
 
   // Clear
   ctx.clearRect(0, 0, W, H);
@@ -99,7 +106,7 @@ function drawBarChart(canvasId, config) {
   ctx.strokeStyle = '#e2e8f0';
   ctx.lineWidth = 1;
   ctx.setLineDash([4, 4]);
-  const gridCount = 5;
+  const gridCount = 4;
 
   if (orientation === 'vertical') {
     for (let i = 0; i <= gridCount; i++) {
@@ -136,7 +143,7 @@ function drawBarChart(canvasId, config) {
 
   if (orientation === 'vertical') {
     const barGroupWidth = chartW / barCount;
-    const barWidth = Math.min(barGroupWidth * 0.5, 40);
+    const barWidth = Math.min(barGroupWidth * 0.45, 36);
 
     data.forEach((item, i) => {
       const x = padding.left + barGroupWidth * i + (barGroupWidth - barWidth) / 2;
@@ -161,7 +168,7 @@ function drawBarChart(canvasId, config) {
     });
   } else {
     const barGroupHeight = chartH / barCount;
-    const barHeight = Math.min(barGroupHeight * 0.5, 30);
+    const barHeight = Math.min(barGroupHeight * 0.45, 24);
 
     data.forEach((item, i) => {
       const y = padding.top + barGroupHeight * i + (barGroupHeight - barHeight) / 2;
@@ -383,6 +390,7 @@ function initUserDashboard() {
     ],
     orientation: 'vertical',
     stacked: true,
+    maxVal: 40,
   });
 }
 
