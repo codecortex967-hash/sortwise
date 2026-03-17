@@ -20,10 +20,10 @@
           .single();
 
         if (!userErr && userData) {
-          const welcomeHeader = document.querySelector('.dash-header h1');
-          if (welcomeHeader) {
+          const welcomeHeaderName = document.getElementById('welcome-user-name');
+          if (welcomeHeaderName) {
             const firstName = userData.full_name ? userData.full_name.split(' ')[0] : userData.email.split('@')[0];
-            welcomeHeader.textContent = `Welcome back, ${firstName}`;
+            welcomeHeaderName.textContent = firstName;
           }
           
           const dashSub = document.querySelector('.dash-header-sub');
@@ -76,7 +76,8 @@
   <header class="navbar">
     <div class="navbar-inner">
       <a href="Home.html" class="navbar-brand">
-        <img src="assets/SortWise_Logo.png" alt="SortWise Logo" style="height: 48px; width: auto; max-width: 160px; object-fit: contain;">
+        <img src="images/logo.jpeg" alt="SortWise Logo" style="height: 36px; width: auto; max-width: 160px; object-fit: contain; border-radius: 50%;">
+        Sort<span class="brand-highlight">Wise</span>
       </a>
       <nav class="nav-links">
         <a href="Home.html">Home</a>
@@ -103,10 +104,14 @@
       <!-- Welcome Header -->
       <div class="dash-header dash-header-user" style="padding: 2.5rem; border-radius: 1.25rem;">
         <div>
-          <h1 style="font-size: 2.25rem; font-weight: 800; color: #1f2937;">Welcome back, Alex</h1>
+          <h1 style="font-size: 2.25rem; font-weight: 800; color: #1f2937;">Welcome back, <span id="welcome-user-name">User</span></h1>
           <p class="dash-header-sub" style="font-size: 1rem; color: #6b7280; margin-top: 0.5rem;">Here is your household's sorting performance.</p>
         </div>
-        <div class="dash-header-buttons" style="margin-top: 0;">
+        <div class="dash-header-buttons" style="margin-top: 0; display: flex; gap: 0.75rem;">
+          <a href="GUI/unified-sim/index.html" class="btn btn-outline-dark btn-lg" style="gap:0.5rem; border-radius: 9999px; padding: 0.75rem 1.75rem;">
+            <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M21 16V8a2 2 0 0 0-1-1.73l-7-4a2 2 0 0 0-2 0l-7 4A2 2 0 0 0 3 8v8a2 2 0 0 0 1 1.73l7 4a2 2 0 0 0 2 0l7-4A2 2 0 0 0 21 16z"/><polyline points="3.27 6.96 12 12.01 20.73 6.96"/><line x1="12" y1="22.08" x2="12" y2="12"/></svg>
+            3D Simulation
+          </a>
           <a href="#ai-section" class="btn btn-primary btn-lg" style="gap:0.5rem; border-radius: 9999px; padding: 0.75rem 1.75rem;">
             <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M23 19a2 2 0 0 1-2 2H3a2 2 0 0 1-2-2V8a2 2 0 0 1 2-2h4l2-3h6l2 3h4a2 2 0 0 1 2 2z"/><circle cx="12" cy="13" r="4"/></svg>
             Identify Waste
