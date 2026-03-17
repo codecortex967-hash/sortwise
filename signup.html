@@ -1,0 +1,142 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <meta name="description" content="SortWise Signup — Join the smart waste management movement today.">
+  <title>Signup — SortWise</title>
+  <link rel="stylesheet" href="css/style.css">
+</head>
+<body>
+
+  <!-- ═══════════ NAVBAR ═══════════ -->
+  <header class="navbar">
+    <div class="navbar-inner">
+      <a href="Home.html" class="navbar-brand">
+        <svg width="32" height="32" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M11 20A7 7 0 0 1 9.8 6.9C15.5 4.9 17 3.1 17 3.1s2.4 6 1.2 12.3A7 7 0 0 1 11 20z"/><path d="M11.7 7.5a4 4 0 0 0-1 8.7"/></svg>
+        Sort<span class="brand-highlight">Wise</span>
+      </a>
+        <a href="Home.html">Home</a>
+        <a href="#" class="btn btn-outline btn-sm nav-signout">Sign Out</a>
+      </nav>
+    </div>
+  </header>
+
+  <!-- ═══════════ SIGNUP CARD ═══════════ -->
+  <main class="signup-page">
+    <div class="container flex justify-center items-center" style="min-height: 80vh;">
+      <div class="card signup-card card-shadow-xl" style="width: 100%; max-width: 400px;">
+        <div class="card-header text-center">
+          <h2 class="card-title" style="font-size: 1.5rem; margin-bottom: 0.5rem;">Create Account</h2>
+          <p style="color: #6b7280; font-size: 0.875rem;">Join the SortWise community</p>
+        </div>
+
+        <div class="card-content">
+          <form id="signup-form" class="flex flex-col gap-4">
+            <div class="form-group">
+              <label for="email" class="form-label">Email Address</label>
+              <input type="email" id="email" class="form-input" placeholder="you@example.com" required>
+            </div>
+            
+            <div class="form-group">
+              <label for="password" class="form-label">Password</label>
+              <input type="password" id="password" class="form-input" placeholder="••••••••" required minlength="6">
+            </div>
+
+            <div class="form-group">
+              <label for="confirm-password" class="form-label">Confirm Password</label>
+              <input type="password" id="confirm-password" class="form-input" placeholder="••••••••" required>
+            </div>
+
+            <button type="submit" id="submit-btn" class="btn btn-primary w-full">
+              Create Account
+            </button>
+            
+            <div id="status-msg" class="text-xs text-center" style="display: none; padding: 0.5rem; border-radius: 4px;"></div>
+          </form>
+
+          <div class="text-center" style="margin-top: 1.5rem; font-size: 0.875rem;">
+            <span>Already have an account?</span>
+            <a href="login.html" style="color: var(--primary); font-weight: 600;">Log in</a>
+          </div>
+        </div>
+      </div>
+    </div>
+  </main>
+
+  <!-- ═══════════ FOOTER ═══════════ -->
+  <footer class="footer">
+    <div class="footer-inner">
+      <div class="footer-brand">
+        <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="#BAE0DA" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M11 20A7 7 0 0 1 9.8 6.9C15.5 4.9 17 3.1 17 3.1s2.4 6 1.2 12.3A7 7 0 0 1 11 20z"/><path d="M11.7 7.5a4 4 0 0 0-1 8.7"/></svg>
+        SortWise
+      </div>
+      <p class="footer-copy">&copy; 2026 SortWise Technologies. All rights reserved.</p>
+    </div>
+  </footer>
+
+  <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+  <script src="js/auth.js"></script>
+  <script>
+    const signupForm = document.getElementById('signup-form');
+    const submitBtn = document.getElementById('submit-btn');
+    const statusMsg = document.getElementById('status-msg');
+
+    signupForm.addEventListener('submit', async (e) => {
+      e.preventDefault();
+      
+      const email = document.getElementById('email').value;
+      const password = document.getElementById('password').value;
+      const confirmPassword = document.getElementById('confirm-password').value;
+      
+      statusMsg.style.display = 'none';
+
+      if (password !== confirmPassword) {
+        showMsg('Passwords do not match', 'error');
+        return;
+      }
+
+      submitBtn.disabled = true;
+      submitBtn.textContent = 'Creating Account...';
+
+      try {
+        const { data, error } = await auth.signUp(email, password);
+
+        if (error) {
+          showMsg(error.message, 'error');
+          submitBtn.disabled = false;
+          submitBtn.textContent = 'Create Account';
+        } else {
+          // Check if session exists (auto-login enabled) or not (confirmation required)
+          if (data.session) {
+            showMsg('Account created! Redirecting...', 'success');
+            window.location.href = 'dashboard.html';
+          } else {
+            showMsg('Success! Please check your email for a confirmation link to activate your account.', 'success');
+            submitBtn.style.display = 'none';
+          }
+        }
+      } catch (err) {
+        console.error('Signup script crash:', err);
+        showMsg('An unexpected error occurred. Please try again.', 'error');
+        submitBtn.disabled = false;
+        submitBtn.textContent = 'Create Account';
+      }
+    });
+
+    function showMsg(text, type) {
+      statusMsg.textContent = text;
+      statusMsg.style.display = 'block';
+      if (type === 'error') {
+        statusMsg.style.background = '#fef2f2';
+        statusMsg.style.color = '#dc2626';
+        statusMsg.style.border = '1px solid #fecaca';
+      } else {
+        statusMsg.style.background = '#f0fdf4';
+        statusMsg.style.color = '#16a34a';
+        statusMsg.style.border = '1px solid #bbf7d0';
+      }
+    }
+  </script>
+</body>
+</html>

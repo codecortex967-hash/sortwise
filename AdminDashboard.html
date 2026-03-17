@@ -6,6 +6,17 @@
   <meta name="description" content="SortWise Admin Dashboard — Monitor district waste accuracy, manage households, and levy fines.">
   <title>Admin Dashboard — SortWise</title>
   <link rel="stylesheet" href="css/style.css">
+  <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+  <script src="js/auth.js"></script>
+  <script>
+    // Explicitly protect the admin dashboard
+    window.auth.checkAuthSession().then(session => {
+      if (session) {
+        console.log('Admin Authenticated:', session.user.email);
+        // Additional admin-only checks could be added here
+      }
+    });
+  </script>
 </head>
 <body>
 
@@ -20,6 +31,7 @@
         <a href="Home.html">Home</a>
         <a href="UserLogin.html">User Portal</a>
         <a href="AdminLogin.html">Admin Portal</a>
+        <a href="GUI/unified-sim/index.html">3D Simulation</a>
         <a href="Home.html" class="btn btn-outline btn-sm nav-signout">Sign Out</a>
       </nav>
       <button id="mobile-menu-btn" class="mobile-menu-btn" aria-label="Toggle menu">
@@ -30,6 +42,7 @@
       <a href="Home.html">Home</a>
       <a href="UserLogin.html">User Portal</a>
       <a href="AdminLogin.html">Admin Portal</a>
+      <a href="GUI/unified-sim/index.html">3D Simulation</a>
       <a href="Home.html">Sign Out</a>
     </div>
   </header>

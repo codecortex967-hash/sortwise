@@ -149,6 +149,21 @@ function initWasteIdentifier() {
 
     const result = await detectWaste(currentFile);
 
+    // Persist calculation to database if user is logged in
+    const session = await window.auth.getSession();
+    if (session.session) {
+      const { error } = await window.auth.supabase
+        .from('waste_logs')
+        .insert({
+          user_id: session.session.user.id,
+          category: result.category,
+          suggestion: result.suggestion,
+          created_at: new Date().toISOString()
+        });
+      
+      if (error) console.error('Error logging waste:', error);
+    }
+
     analyzeBtn.style.display = 'none';
     resultBox.style.display = 'flex';
     resultBox.className = 'result-box success';

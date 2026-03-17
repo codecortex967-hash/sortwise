@@ -16,19 +16,19 @@
         <svg width="32" height="32" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M11 20A7 7 0 0 1 9.8 6.9C15.5 4.9 17 3.1 17 3.1s2.4 6 1.2 12.3A7 7 0 0 1 11 20z"/><path d="M11.7 7.5a4 4 0 0 0-1 8.7"/></svg>
         Sort<span class="brand-highlight">Wise</span>
       </a>
-      <nav class="nav-links">
         <a href="Home.html">Home</a>
         <a href="UserLogin.html">User Portal</a>
         <a href="AdminLogin.html">Admin Portal</a>
+        <a href="#" class="btn btn-outline btn-sm nav-signout">Sign Out</a>
       </nav>
       <button id="mobile-menu-btn" class="mobile-menu-btn" aria-label="Toggle menu">
         <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><line x1="3" y1="12" x2="21" y2="12"/><line x1="3" y1="6" x2="21" y2="6"/><line x1="3" y1="18" x2="21" y2="18"/></svg>
       </button>
     </div>
-    <div id="mobile-nav" class="mobile-nav">
       <a href="Home.html">Home</a>
       <a href="UserLogin.html">User Portal</a>
       <a href="AdminLogin.html">Admin Portal</a>
+      <a href="#" class="nav-signout">Sign Out</a>
     </div>
   </header>
 
@@ -80,11 +80,42 @@
     </div>
   </footer>
 
+  <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+  <script src="js/auth.js"></script>
   <script src="js/script.js"></script>
   <script>
-    document.getElementById('admin-login-form').addEventListener('submit', function(e) {
+    const adminLoginForm = document.getElementById('admin-login-form');
+    const submitBtn = adminLoginForm.querySelector('button[type="submit"]');
+
+    adminLoginForm.addEventListener('submit', async function(e) {
       e.preventDefault();
-      window.location.href = 'AdminDashboard.html';
+      
+      const email = document.getElementById('admin-id').value;
+      const password = document.getElementById('admin-password').value;
+      
+      submitBtn.disabled = true;
+      submitBtn.textContent = 'Authenticating...';
+
+      try {
+        const { data, error } = await auth.signIn(email, password);
+        
+        if (error) {
+          alert('Authentication Failed: ' + error.message);
+          submitBtn.disabled = false;
+          submitBtn.textContent = 'Authenticate';
+        } else if (!data.session) {
+          alert('Access Pending: Please check your email and confirm your admin account.');
+          submitBtn.disabled = false;
+          submitBtn.textContent = 'Authenticate';
+        } else {
+          window.location.href = 'AdminDashboard.html';
+        }
+      } catch (err) {
+        console.error('Admin login crash:', err);
+        alert('An unexpected error occurred. Please try again.');
+        submitBtn.disabled = false;
+        submitBtn.textContent = 'Authenticate';
+      }
     });
   </script>
 </body>

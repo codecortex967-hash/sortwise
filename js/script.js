@@ -21,10 +21,25 @@ function initNavbar() {
   });
 
   // Highlight active page in nav
-  const currentPage = window.location.pathname.split('/').pop() || 'index.html';
+  const currentPath = window.location.pathname;
+  const currentPage = currentPath.split('/').pop() || 'index.html';
+  
   document.querySelectorAll('.nav-links a, .mobile-nav a').forEach((link) => {
     const href = link.getAttribute('href');
-    if (href === currentPage || (currentPage === 'index.html' && href === 'Home.html')) {
+    if (!href) return;
+
+    // Direct match or Home redirection
+    const isHome = (currentPage === 'index.html' || currentPage === 'Home.html') && href === 'Home.html';
+    const isExact = href === currentPage;
+    
+    // Check if the link target is contained in the current path (for subdirectories)
+    const isSubPath = href !== 'Home.html' && currentPath.includes(href);
+
+    // Dashboard mappings
+    const isUserPortal = currentPage === 'UserDashboard.html' && href === 'UserLogin.html';
+    const isAdminPortal = currentPage === 'AdminDashboard.html' && href === 'AdminLogin.html';
+
+    if (isHome || isExact || isSubPath || isUserPortal || isAdminPortal) {
       link.classList.add('active');
     }
   });

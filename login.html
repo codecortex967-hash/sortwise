@@ -1,0 +1,117 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <meta name="description" content="SortWise Login — Secure access to your smart waste management portal.">
+  <title>Login — SortWise</title>
+  <link rel="stylesheet" href="css/style.css">
+</head>
+<body>
+
+  <!-- ═══════════ NAVBAR ═══════════ -->
+  <header class="navbar">
+    <div class="navbar-inner">
+      <a href="Home.html" class="navbar-brand">
+        <svg width="32" height="32" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M11 20A7 7 0 0 1 9.8 6.9C15.5 4.9 17 3.1 17 3.1s2.4 6 1.2 12.3A7 7 0 0 1 11 20z"/><path d="M11.7 7.5a4 4 0 0 0-1 8.7"/></svg>
+        Sort<span class="brand-highlight">Wise</span>
+      </a>
+        <a href="Home.html">Home</a>
+        <a href="#" class="btn btn-outline btn-sm nav-signout">Sign Out</a>
+      </nav>
+    </div>
+  </header>
+
+  <!-- ═══════════ LOGIN CARD ═══════════ -->
+  <main class="login-page">
+    <div class="container flex justify-center items-center" style="min-height: 80vh;">
+      <div class="card login-card card-shadow-xl" style="width: 100%; max-width: 400px;">
+        <div class="card-header text-center">
+          <h2 class="card-title" style="font-size: 1.5rem; margin-bottom: 0.5rem;">Welcome Back</h2>
+          <p style="color: #6b7280; font-size: 0.875rem;">Sign in to your SortWise account</p>
+        </div>
+
+        <div class="card-content">
+          <form id="login-form" class="flex flex-col gap-4">
+            <div class="form-group">
+              <label for="email" class="form-label">Email Address</label>
+              <input type="email" id="email" class="form-input" placeholder="you@example.com" required>
+            </div>
+            
+            <div class="form-group">
+              <label for="password" class="form-label">Password</label>
+              <input type="password" id="password" class="form-input" placeholder="••••••••" required>
+            </div>
+
+            <button type="submit" id="submit-btn" class="btn btn-primary w-full">
+              Sign In
+            </button>
+            
+            <div id="error-msg" class="text-xs text-red-500 text-center" style="color: #d4183d; display: none;"></div>
+          </form>
+
+          <div class="text-center" style="margin-top: 1.5rem; font-size: 0.875rem;">
+            <span>Don't have an account?</span>
+            <a href="signup.html" style="color: var(--primary); font-weight: 600;">Sign up</a>
+          </div>
+        </div>
+      </div>
+    </div>
+  </main>
+
+  <!-- ═══════════ FOOTER ═══════════ -->
+  <footer class="footer">
+    <div class="footer-inner">
+      <div class="footer-brand">
+        <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="#BAE0DA" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M11 20A7 7 0 0 1 9.8 6.9C15.5 4.9 17 3.1 17 3.1s2.4 6 1.2 12.3A7 7 0 0 1 11 20z"/><path d="M11.7 7.5a4 4 0 0 0-1 8.7"/></svg>
+        SortWise
+      </div>
+      <p class="footer-copy">&copy; 2026 SortWise Technologies. All rights reserved.</p>
+    </div>
+  </footer>
+
+  <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+  <script src="js/auth.js"></script>
+  <script>
+    const loginForm = document.getElementById('login-form');
+    const submitBtn = document.getElementById('submit-btn');
+    const errorMsg = document.getElementById('error-msg');
+
+    loginForm.addEventListener('submit', async (e) => {
+      e.preventDefault();
+      
+      const email = document.getElementById('email').value;
+      const password = document.getElementById('password').value;
+      
+      submitBtn.disabled = true;
+      submitBtn.textContent = 'Signing in...';
+      errorMsg.style.display = 'none';
+
+      try {
+        const { data, error } = await auth.signIn(email, password);
+
+        if (error) {
+          errorMsg.textContent = error.message;
+          errorMsg.style.display = 'block';
+          submitBtn.disabled = false;
+          submitBtn.textContent = 'Sign In';
+        } else if (!data.session) {
+          // This happens if email confirmation is required but not done
+          errorMsg.textContent = 'Please check your email and confirm your account before logging in.';
+          errorMsg.style.display = 'block';
+          submitBtn.disabled = false;
+          submitBtn.textContent = 'Sign In';
+        } else {
+          window.location.href = 'dashboard.html';
+        }
+      } catch (err) {
+        console.error('Login script crash:', err);
+        errorMsg.textContent = 'An unexpected error occurred. Please try again.';
+        errorMsg.style.display = 'block';
+        submitBtn.disabled = false;
+        submitBtn.textContent = 'Sign In';
+      }
+    });
+  </script>
+</body>
+</html>

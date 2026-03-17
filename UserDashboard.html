@@ -6,6 +6,54 @@
   <meta name="description" content="SortWise User Dashboard — Track your waste sorting, upload images for AI detection, and view recent scans.">
   <title>User Dashboard — SortWise</title>
   <link rel="stylesheet" href="css/style.css">
+  <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+  <script src="js/auth.js"></script>
+  <script>
+    // UI update based on session
+    window.auth.checkAuthSession().then(session => {
+      if (session) {
+        const userEmail = session.user.email;
+        const welcomeHeader = document.querySelector('.dash-header h1');
+        if (welcomeHeader) {
+          welcomeHeader.textContent = `Welcome back, ${userEmail.split('@')[0]}`;
+        }
+        fetchRecentScans(session.user.id);
+      }
+    });
+
+    async function fetchRecentScans(userId) {
+      const { data, error } = await window.auth.supabase
+        .from('waste_logs')
+        .select('*')
+        .eq('user_id', userId)
+        .order('created_at', { ascending: false })
+        .limit(5);
+
+      if (error) {
+        console.error('Error fetching logs:', error);
+        return;
+      }
+
+      const scanList = document.querySelector('.scan-log-list');
+      if (data.length > 0) {
+        scanList.innerHTML = data.map(log => `
+          <li class="scan-log-item">
+            <div style="display:flex; align-items:center; gap:0.75rem;">
+              <div class="scan-icon correct">
+                <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polyline points="1 4 1 10 7 10"/><path d="M3.51 15a9 9 0 1 0 2.13-9.36L1 10"/></svg>
+              </div>
+              <div class="scan-info">
+                <h4>${log.category}</h4>
+                <p>${new Date(log.created_at).toLocaleString()}</p>
+              </div>
+            </div>
+          </li>
+        `).join('');
+      } else {
+        scanList.innerHTML = '<li class="scan-log-item"><p style="color: #6b7280; padding: 1rem;">No scans yet. Start identifying waste!</p></li>';
+      }
+    }
+  </script>
 </head>
 <body>
 
@@ -20,6 +68,7 @@
         <a href="Home.html">Home</a>
         <a href="UserLogin.html">User Portal</a>
         <a href="AdminLogin.html">Admin Portal</a>
+        <a href="GUI/unified-sim/index.html">3D Simulation</a>
         <a href="Home.html" class="btn btn-outline btn-sm nav-signout">Sign Out</a>
       </nav>
       <button id="mobile-menu-btn" class="mobile-menu-btn" aria-label="Toggle menu">
@@ -30,6 +79,7 @@
       <a href="Home.html">Home</a>
       <a href="UserLogin.html">User Portal</a>
       <a href="AdminLogin.html">Admin Portal</a>
+      <a href="GUI/unified-sim/index.html">3D Simulation</a>
       <a href="Home.html">Sign Out</a>
     </div>
   </header>
@@ -45,9 +95,9 @@
           <p class="dash-header-sub">Here is your household's sorting performance.</p>
         </div>
         <div class="dash-header-buttons">
-          <a href="#" class="btn btn-outline-dark btn-sm" style="gap:0.5rem;">
-            <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polyline points="1 4 1 10 7 10"/><path d="M3.51 15a9 9 0 1 0 2.13-9.36L1 10"/></svg>
-            View History
+          <a href="GUI/unified-sim/index.html" class="btn btn-outline-dark btn-sm" style="gap:0.5rem;">
+            <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M21 16V8a2 2 0 0 0-1-1.73l-7-4a2 2 0 0 0-2 0l-7 4A2 2 0 0 0 3 8v8a2 2 0 0 0 1 1.73l7 4a2 2 0 0 0 2 0l7-4A2 2 0 0 0 21 16z"/><polyline points="3.27 6.96 12 12.01 20.73 6.96"/><line x1="12" y1="22.08" x2="12" y2="12"/></svg>
+            3D Simulation
           </a>
           <a href="#ai-section" class="btn btn-primary btn-sm" style="gap:0.5rem;">
             <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M23 19a2 2 0 0 1-2 2H3a2 2 0 0 1-2-2V8a2 2 0 0 1 2-2h4l2-3h6l2 3h4a2 2 0 0 1 2 2z"/><circle cx="12" cy="13" r="4"/></svg>
