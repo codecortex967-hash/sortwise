@@ -8,84 +8,35 @@
  * Provides the detectWaste() function for image classification.
  */
 
-// ── Configuration ──
-const API_CONFIG = {
-  // Replace with your actual AI API endpoint
-  endpoint: 'https://generativelanguage.googleapis.com/v1beta/models/gemini-2.5-flash:generateContent',
-  // Replace with your actual API key
-  apiKey: 'AIzaSyAcZH1QQHUNdAAOeETgZ1FqnQPhUajZV0o',
-};
-
-const CATEGORY_MAP = {
-  plastic: ['plastic', 'plastic bottle', 'wrapper', 'plastic bag', 'container', 'polyethylene'],
-  metal: ['metal', 'tin can', 'aluminum can', 'metal lid', 'can', 'foil', 'steel', 'tin'],
-  paper: ['paper', 'newspaper', 'cardboard', 'paper cup', 'carton', 'box', 'magazine'],
-  glass: ['glass', 'glass bottle', 'jar'],
-  organic: ['organic', 'banana peel', 'food waste', 'vegetables', 'leaves', 'food', 'peels', 'fruit', 'apple', 'scrap','rubber']
-};
-
 /**
- * Helper to convert File to base64 required by Gemini
+ * Helper to convert File to base64 required by the backend
  */
-function fileToGenerativePart(file) {
+function fileToBase64(file) {
   return new Promise((resolve, reject) => {
     const reader = new FileReader();
     reader.onloadend = () => {
-      const base64Data = reader.result.split(',')[1];
-      resolve({
-        inlineData: {
-          data: base64Data,
-          mimeType: file.type
-        }
-      });
+      resolve(reader.result.split(',')[1]);
     };
     reader.onerror = reject;
     reader.readAsDataURL(file);
   });
 }
 
-function mapToFixedCategory(rawOutput) {
-  const normalized = rawOutput.toLowerCase().trim();
-  
-  // Try direct match first
-  if (Object.keys(CATEGORY_MAP).includes(normalized)) {
-    return normalized;
-  }
-
-  // Fallback to keyword search
-  for (const [category, keywords] of Object.entries(CATEGORY_MAP)) {
-    if (keywords.some(keyword => normalized.includes(keyword))) {
-      return category;
-    }
-  }
-
-  return 'Unknown'; 
-}
-
 /**
- * Send an image file to the AI waste-detection API.
+ * Send an image file to the backend AI waste-detection API.
  * @param {File} imageFile - The image file to classify.
  * @returns {Promise<{category: string, error?: boolean}>}
  */
 async function detectWaste(imageFile) {
   try {
-    const imagePart = await fileToGenerativePart(imageFile);
+    const base64Image = await fileToBase64(imageFile);
 
-    const payload = {
-      contents: [{
-        parts: [
-          { text: "Classify the waste item in the image into exactly one of these five categories: plastic, metal, paper, glass, organic. Return ONLY ONE WORD from this list and nothing else. No punctuation, no explanation." },
-          imagePart
-        ]
-      }]
-    };
-
-    const response = await fetch(`${API_CONFIG.endpoint}?key=${API_CONFIG.apiKey}`, {
+    const response = await fetch('http://localhost:3000/classify', {
       method: 'POST',
       headers: {
         'Content-Type': 'application/json',
       },
-      body: JSON.stringify(payload),
+      body: JSON.stringify({ base64Image }),
     });
 
     if (!response.ok) {
@@ -94,15 +45,13 @@ async function detectWaste(imageFile) {
 
     const data = await response.json();
     
-    let rawText = '';
-    if (data.candidates && data.candidates[0] && data.candidates[0].content && data.candidates[0].content.parts) {
-      rawText = data.candidates[0].content.parts[0].text;
-    } else {
-      throw new Error("Invalid response format from Gemini");
+    if (data.error) {
+      throw new Error(data.error);
     }
 
-    return { category: mapToFixedCategory(rawText) };
+    return { category: data.label };
   } catch (error) {
+    console.error("Classification error:", error);
     return { error: true };
   }
 }
