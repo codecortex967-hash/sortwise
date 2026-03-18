@@ -2,12 +2,33 @@ import express from 'express';
 import cors from 'cors';
 import fetch from 'node-fetch';
 import 'dotenv/config';
+import path from 'path';
+import { fileURLToPath } from 'url';
+import fs from 'fs';
+
+const __filename = fileURLToPath(import.meta.url);
+const __dirname = path.dirname(__filename);
 
 const app = express();
-const port = process.env.PORT || 3000;
+const port = process.env.PORT || 10000;
 
 app.use(cors());
 app.use(express.json({ limit: '10mb' }));
+
+// Determine static folder (Root vs GUI)
+let staticDir = __dirname;
+if (fs.existsSync(path.join(__dirname, 'GUI', 'index.html'))) {
+  staticDir = path.join(__dirname, 'GUI');
+}
+console.log(`[STARTUP] Serving static files from: ${staticDir}`);
+
+// Serve static files
+app.use(express.static(staticDir));
+
+// Root route to ensure index.html is served
+app.get('/', (req, res) => {
+  res.sendFile(path.join(staticDir, 'index.html'));
+});
 
 const CATEGORY_MAP = {
   plastic: ['plastic', 'plastic bottle', 'wrapper', 'plastic bag', 'container', 'polyethylene'],
