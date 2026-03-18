@@ -75,7 +75,18 @@
           </button>
         </form>
 
-        <div class="login-footer">
+        <div id="success-state" style="display: none; flex-direction: column; align-items: center; text-align: center; gap: 1rem; padding: 1.5rem 0;">
+          <div style="width: 3.5rem; height: 3.5rem; background: #dcfce7; border-radius: 50%; display: flex; align-items: center; justify-content: center; margin-bottom: 0.5rem;">
+            <svg width="32" height="32" viewBox="0 0 24 24" fill="none" stroke="#16a34a" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><polyline points="20 6 9 17 4 12"/></svg>
+          </div>
+          <h3 style="font-size: 1.5rem; font-weight: 700; color: #111827;">Authentication Success</h3>
+          <p style="color: #4b5563; margin-bottom: 1rem;">Welcome back to your SortWise portal and thank you for keeping the city sustainable.</p>
+          <button onclick="window.location.href='UserDashboard.html'" class="btn btn-primary w-full" style="height: 3.5rem; font-size: 1.25rem;">
+            Go to User Dashboard
+          </button>
+        </div>
+
+        <div class="login-footer" id="login-footer">
           <span>Don't have an account? </span>
           <a href="#">Register your household</a>
         </div>
@@ -148,7 +159,10 @@
             alert('Signup Error: ' + error.message);
           } else {
             if (data.session) {
-              window.location.href = 'UserDashboard.html';
+              console.log('Signup successful.');
+              loginForm.style.display = 'none';
+              document.getElementById('login-footer').style.display = 'none';
+              document.getElementById('success-state').style.display = 'flex';
             } else {
               alert('Success! Please check your email for a confirmation link.');
               // Toggle back to login
@@ -156,14 +170,16 @@
             }
           }
         } else {
-          const { data, error, role } = await auth.signIn(email, password);
+          const { data, error } = await auth.signIn(email, password);
           if (error) {
             alert('Login Error: ' + error.message);
           } else if (!data.session) {
             alert('Please confirm your email before logging in.');
           } else {
-            // Role-based redirection is now handled by auth.js
-            console.log('Login successful, routing...');
+            console.log('Login successful.');
+            loginForm.style.display = 'none';
+            document.getElementById('login-footer').style.display = 'none';
+            document.getElementById('success-state').style.display = 'flex';
           }
         }
       } catch (err) {

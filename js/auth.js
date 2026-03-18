@@ -82,6 +82,7 @@
         if (res.error.message.includes('Email not confirmed')) {
           res.error.message = 'Please check your email and confirm your account before logging in.';
         }
+      } else if (res.data?.user) {
         console.log('SignIn success. User ID:', res.data.user.id);
         // Fetch profile and role
         const { data: userData, error: profileError } = await this.getUserProfile(res.data.user.id, res.data.user.email);
@@ -90,13 +91,6 @@
         const role = userData?.role || 'user';
         console.log(`SignIn determined role from database: "${role}"`);
         res.role = role;
-
-        // Optionally handle redirection if on an auth page
-        const currentPath = window.location.pathname;
-        if (currentPath.includes('login.html') || currentPath.includes('UserLogin.html') || currentPath.includes('AdminLogin.html')) {
-          console.log(`Redirecting from auth page based on role: ${role}`);
-          this.redirectUserByRole(role);
-        }
       }
 
       return res;
@@ -125,7 +119,7 @@
       if (e) e.preventDefault();
       const { error } = await this.signOut();
       if (!error) {
-        window.location.href = 'login.html';
+        window.location.href = 'Home.html';
       } else {
         alert('Logout error: ' + error.message);
       }
@@ -140,6 +134,8 @@
         const { data } = await this.getSession();
         const session = data?.session;
         const currentPath = window.location.pathname;
+        console.log("Current page:", currentPath);
+        
         const isProtectedPath = ['dashboard.html', 'UserDashboard.html', 'AdminDashboard.html'].some(p => currentPath.includes(p));
         const isAdminPath = currentPath.includes('AdminDashboard.html');
 
@@ -150,22 +146,10 @@
           const { data: userData } = await this.getUserProfile(session.user.id, session.user.email);
           const role = userData?.role || 'user';
           
-          // Protect admin dashboard
-          if (isAdminPath && role !== 'admin') {
-            this.redirectUserByRole(role);
-            return session;
-          }
-
-          // If on a generic auth page or Home, redirect to appropriate dashboard
-          const isGenericAuthPage = ['login.html', 'UserLogin.html', 'AdminLogin.html', 'signup.html'].some(p => currentPath.includes(p));
-          if (isGenericAuthPage || currentPath.endsWith('/') || currentPath.endsWith('Home.html') || currentPath.endsWith('index.html')) {
-            // Only redirect if explicitly on an auth page, not every page load
-            if (isGenericAuthPage) this.redirectUserByRole(role);
-          }
         } else {
           document.body.classList.remove('authenticated');
           if (isProtectedPath) {
-            window.location.href = 'login.html';
+            alert("Please login first");
           }
         }
 
@@ -183,28 +167,12 @@
       try {
         const supabase = getClient();
         supabase.auth.onAuthStateChange((event, session) => {
-          console.log('Auth State Change:', event);
+          console.log('Auth state changed:', event);
 
           if (session) {
             document.body.classList.add('authenticated');
           } else {
             document.body.classList.remove('authenticated');
-          }
-
-          const currentPath = window.location.pathname;
-          const isProtectedPath = ['dashboard.html', 'UserDashboard.html', 'AdminDashboard.html'].some(p => currentPath.includes(p));
-
-          if (event === 'SIGNED_OUT' && isProtectedPath) {
-            window.location.href = 'UserLogin.html';
-          } else if (event === 'SIGNED_IN') {
-            const isGenericAuthPage = (currentPath.includes('login.html') || currentPath.includes('signup.html') || 
-                                       currentPath.includes('UserLogin.html') || currentPath.includes('AdminLogin.html'));
-              
-            if (isGenericAuthPage) {
-              this.getUserProfile(session.user.id, session.user.email).then(({data}) => {
-                this.redirectUserByRole(data?.role || 'user');
-              });
-            }
           }
         });
       } catch (err) {
@@ -252,20 +220,6 @@
         console.log('Profile fetched from database:', data);
       }
       return { data, error };
-    },
-
-    /**
-     * Centralized redirection logic based on user role.
-     */
-    redirectUserByRole(role) {
-      console.log(`>>> REDIRECT DECISION: Role is "${role}"`);
-      if (role === 'admin') {
-        console.log('Redirecting to Admin Dashboard...');
-        window.location.href = 'AdminDashboard.html';
-      } else {
-        console.log('Redirecting to User Dashboard...');
-        window.location.href = 'UserDashboard.html';
-      }
     }
   };
 

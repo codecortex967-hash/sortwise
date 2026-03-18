@@ -399,12 +399,88 @@ function initUserDashboard() {
 }
 
 // ============================================
+// AI CAMERA FEATURE (User Dashboard)
+// ============================================
+
+function initCameraFeature() {
+  const cameraBtn = document.getElementById('camera-btn');
+  const galleryBtn = document.getElementById('gallery-btn');
+  const cameraInput = document.getElementById('waste-camera-input');
+  const galleryInput = document.getElementById('waste-gallery-input');
+  const uploadZone = document.getElementById('upload-zone');
+  const previewArea = document.getElementById('preview-area');
+  const previewImg = document.getElementById('preview-img');
+  const retakeBtn = document.getElementById('preview-retake');
+  const analyzeBtn = document.getElementById('analyze-btn');
+  const resultBox = document.getElementById('result-box');
+
+  if (!cameraBtn || !cameraInput) return;
+
+  // Trigger file inputs
+  cameraBtn.addEventListener('click', () => cameraInput.click());
+  galleryBtn.addEventListener('click', () => galleryInput.click());
+
+  // Handle file selection
+  const handleFileSelect = (e) => {
+    const file = e.target.files[0];
+    if (file) {
+      const reader = new FileReader();
+      reader.onload = (e) => {
+        previewImg.src = e.target.result;
+        uploadZone.style.display = 'none';
+        previewArea.style.display = 'flex';
+        resultBox.style.display = 'none';
+      };
+      reader.readAsDataURL(file);
+    }
+  };
+
+  cameraInput.addEventListener('change', handleFileSelect);
+  galleryInput.addEventListener('change', handleFileSelect);
+
+  // Retake / Clear
+  retakeBtn.addEventListener('click', () => {
+    cameraInput.value = '';
+    galleryInput.value = '';
+    previewImg.src = '';
+    previewArea.style.display = 'none';
+    uploadZone.style.display = 'flex';
+    resultBox.style.display = 'none';
+  });
+
+  // Analyze (Mock success state for UI completeness)
+  analyzeBtn.addEventListener('click', () => {
+    const originalText = analyzeBtn.innerText;
+    analyzeBtn.innerText = 'Analyzing...';
+    analyzeBtn.disabled = true;
+
+    // Simulate API call delay
+    setTimeout(() => {
+      analyzeBtn.innerText = originalText;
+      analyzeBtn.disabled = false;
+      
+      // Show mock result
+      resultBox.className = 'result-box success';
+      resultBox.innerHTML = `
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M22 11.08V12a10 10 0 1 1-5.93-9.14"></path><polyline points="22 4 12 14.01 9 11.01"></polyline></svg>
+        <div>
+          <div class="result-category">Analyzed: Recyclable Plastic</div>
+          <div class="result-suggestion">Please rinse before placing in the Blue Bin. Added 0.2kg to your weekly score!</div>
+        </div>
+      `;
+      resultBox.style.display = 'flex';
+    }, 1500);
+  });
+}
+
+// ============================================
 // INIT
 // ============================================
 document.addEventListener('DOMContentLoaded', () => {
   initNavbar();
   initAdminDashboard();
   initUserDashboard();
+  initCameraFeature();
 });
 
 // Redraw charts on resize

@@ -67,7 +67,20 @@
           <button type="submit" class="btn btn-secondary w-full" style="height: 3rem; font-size: 1.125rem; margin-top: 0.5rem;">
             Authenticate
           </button>
+        </form>
 
+        <div id="success-state" style="display: none; flex-direction: column; align-items: center; text-align: center; gap: 1rem; padding: 1.5rem 0;">
+          <div style="width: 3.5rem; height: 3.5rem; background: #cffafe; border-radius: 50%; display: flex; align-items: center; justify-content: center; margin-bottom: 0.5rem;">
+            <svg width="32" height="32" viewBox="0 0 24 24" fill="none" stroke="#0891b2" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z"/><polyline points="9 12 11 14 15 10"/></svg>
+          </div>
+          <h3 style="font-size: 1.5rem; font-weight: 700; color: #111827;">System Authorized</h3>
+          <p style="color: #4b5563; margin-bottom: 1rem;">Administrator clearance granted. You may now proceed to the control panel.</p>
+          <button onclick="window.location.href='AdminDashboard.html'" class="btn btn-secondary w-full" style="height: 3.5rem; font-size: 1.25rem;">
+            Go to Admin Dashboard
+          </button>
+        </div>
+
+        <div id="login-footer-area">
           <div class="login-footer" style="text-align: center; margin-top: 1.5rem; font-size: 0.875rem;">
             <a href="#" id="admin-register-toggle" style="color: var(--secondary); font-weight: 600;">Request Admin Access / Register</a>
           </div>
@@ -75,7 +88,7 @@
           <div class="login-back">
             <a href="Home.html">Return to Home</a>
           </div>
-        </form>
+        </div>
       </div>
     </div>
   </main>
@@ -146,15 +159,21 @@
             registerToggle.click();
           } else {
             console.log('Admin registered and logged in.');
+            adminLoginForm.style.display = 'none';
+            document.getElementById('login-footer-area').style.display = 'none';
+            document.getElementById('success-state').style.display = 'flex';
           }
         } else {
-          const { data, error } = await window.auth.signIn(email, password, 'admin');
+          const { data, error } = await window.auth.signIn(email, password);
           if (error) {
             alert('Authentication Failed: ' + error.message);
           } else if (!data.session) {
             alert('Access Pending: Please check your email and confirm your admin account.');
           } else {
-            console.log('Login successful, routing...');
+            console.log('Login successful.');
+            adminLoginForm.style.display = 'none';
+            document.getElementById('login-footer-area').style.display = 'none';
+            document.getElementById('success-state').style.display = 'flex';
           }
         }
       } catch (err) {
