@@ -228,6 +228,14 @@ function roundRect(ctx, x, y, w, h, r) {
 // ADMIN DASHBOARD — Household Table & Fines
 // ============================================
 
+const DUMMY_USERS = [
+  { id: 'usr_001', name: 'Aarav Sharma', email: 'aarav.s@mmail.com', city: 'Mumbai', role: 'user', created: '2026-01-15', accuracy: 94, finesCount: 0, recentlyFined: false },
+  { id: 'usr_002', name: 'Ishita Kapoor', email: 'ishita.k@imail.com', city: 'Indore', role: 'user', created: '2026-02-10', accuracy: 68, finesCount: 2, recentlyFined: false },
+  { id: 'usr_003', name: 'Rohan Mehta', email: 'rohan.m@mmail.com', city: 'Mumbai', role: 'user', created: '2026-02-22', accuracy: 82, finesCount: 1, recentlyFined: false },
+  { id: 'usr_004', name: 'Ananya Iyer', email: 'ananya.i@imail.com', city: 'Indore', role: 'user', created: '2026-03-01', accuracy: 91, finesCount: 0, recentlyFined: false },
+  { id: 'usr_005', name: 'Kabir Verma', email: 'kabir.v@mmail.com', city: 'Mumbai', role: 'user', created: '2026-03-05', accuracy: 55, finesCount: 3, recentlyFined: false }
+];
+
 let dbUsersCache = [];
 
 async function initAdminDashboard() {
@@ -239,37 +247,33 @@ async function initAdminDashboard() {
   // Render loading state
   tableBody.innerHTML = '<tr class="empty-row"><td colspan="5">Loading system users...</td></tr>';
 
-  // Wait for auth library initialization
-  let retries = 0;
-  while (!window.auth?.supabase?.value && retries < 10) {
-    await new Promise(r => setTimeout(r, 200));
-    retries++;
-  }
+  // Initialize cache with dummy data for showcase and render immediately
+  dbUsersCache = [...DUMMY_USERS];
 
-  if (window.auth?.supabase?.value && dbUsersCache.length === 0) {
-    try {
-      const { data, error } = await window.auth.supabase.value
-        .from('profiles')
-        .select('*')
-        .order('created_at', { ascending: false });
-
-      if (!error && data) {
-        dbUsersCache = data.map(u => ({
-          id: u.id,
-          name: u.full_name || 'Anonymous User',
-          email: u.email,
-          city: u.city || 'Unknown',
-          role: u.role,
-          created: new Date(u.created_at).toLocaleDateString(),
-          // Mock data for UI visual completion since full reporting backend isn't mapped
-          accuracy: Math.floor(Math.random() * (99 - 50 + 1) + 50),
-          finesCount: Math.floor(Math.random() * 3),
-          recentlyFined: false
-        }));
-      }
-    } catch (e) {
-      console.error('Error fetching admin user list:', e);
-    }
+  // Wait for auth library initialization to append real DB users if any
+  if (window.auth?.supabase?.value) {
+    window.auth.supabase.value
+      .from('profiles')
+      .select('*')
+      .order('created_at', { ascending: false })
+      .then(({ data, error }) => {
+        if (!error && data) {
+          const realUsers = data.map(u => ({
+            id: u.id,
+            name: u.full_name || 'Anonymous User',
+            email: u.email,
+            city: u.city || 'Unknown',
+            role: u.role,
+            created: new Date(u.created_at).toLocaleDateString(),
+            accuracy: Math.floor(Math.random() * (99 - 50 + 1) + 50),
+            finesCount: Math.floor(Math.random() * 3),
+            recentlyFined: false
+          }));
+          dbUsersCache = [...realUsers, ...DUMMY_USERS];
+          // Re-render with real data merged in
+          if (typeof renderTable === 'function') renderTable(searchInput.value);
+        }
+      });
   }
 
   function renderTable(filter = '') {

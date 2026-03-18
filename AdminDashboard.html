@@ -10,12 +10,38 @@
   <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
   <script src="js/auth.js"></script>
   <script>
-    // Explicitly protect the admin dashboard
-    window.auth.checkAuthSession().then(session => {
-      if (session) {
-        console.log('Admin Authenticated:', session.user.email);
-        // Additional admin-only checks could be added here
-      }
+    // Explicitly protect the admin dashboard and personalize greeting - Ensure DOM is ready!
+    document.addEventListener('DOMContentLoaded', () => {
+      window.auth.checkAuthSession().then(async session => {
+        if (session) {
+          console.log('Admin Authenticated:', session.user.email);
+          
+          // Fetch admin profile data with metadata recovery fallback
+          const { data: adminData, error } = await window.auth.getUserProfile(session.user.id, session.user.email, session.user);
+          
+          const nameSpan = document.getElementById('welcome-admin-name');
+
+          if (!error && adminData) {
+            if (nameSpan) {
+              const metadataName = session.user.user_metadata?.full_name;
+              nameSpan.textContent = adminData.full_name || metadataName || 'Administrator';
+            }
+            
+            // Update subheader with admin email and city
+            const subHeader = document.querySelector('.dash-header-sub');
+            if (subHeader) {
+              const cityText = adminData.city ? ` — ${adminData.city} District` : '';
+              subHeader.innerHTML = `<svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M21 10c0 7-9 13-9 13s-9-6-9-13a9 9 0 0 1 18 0z"/><circle cx="12" cy="10" r="3"/></svg> Authorized: ${adminData.email}${cityText}`;
+            }
+          } else {
+            // Fallback if profile fetch fails
+            if (nameSpan) {
+              const metadataName = session.user.user_metadata?.full_name;
+              nameSpan.textContent = metadataName || 'Administrator';
+            }
+          }
+        }
+      });
     });
   </script>
 </head>
@@ -52,7 +78,7 @@
       <div class="dash-header dash-header-admin">
         <div class="dash-header-orb"></div>
         <div>
-          <h1>Welcome Admin</h1>
+          <h1>Welcome, <span id="welcome-admin-name">Admin</span></h1>
           <p class="dash-header-sub">
             <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M21 10c0 7-9 13-9 13s-9-6-9-13a9 9 0 0 1 18 0z"/><circle cx="12" cy="10" r="3"/></svg>
             Global Municipality Monitoring
@@ -136,7 +162,7 @@
       </div>
 
       <!-- Heatmap Visualization -->
-      <div class="card card-shadow-md" style="margin-bottom: 2rem; padding: 0; overflow: hidden; height: 450px; position: relative; border-radius: 1.25rem;">
+      <div class="card card-shadow-md" style="margin-bottom: 2rem; padding: 0; overflow: hidden; height: 450px; position: relative; border-radius: 1.25rem; border: 2px solid var(--secondary);">
         <div class="card-header" style="position: absolute; top: 1rem; left: 1rem; z-index: 1000; background: rgba(255,255,255,0.9); padding: 0.75rem 1.25rem; border-radius: 0.75rem; box-shadow: 0 4px 6px -1px rgb(0 0 0 / 0.1);">
           <h3 class="card-title" style="margin: 0; font-size: 1.125rem;">Waste Accumulation Heatmap</h3>
           <div style="display: flex; gap: 0.5rem; margin-top: 0.5rem;">

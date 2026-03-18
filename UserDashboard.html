@@ -9,33 +9,39 @@
   <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
   <script src="js/auth.js"></script>
   <script>
-    // UI update based on session
-    window.auth.checkAuthSession().then(async session => {
-      if (session) {
-        // Fetch user profile data using the new helper
-        const { data: userData, error: userErr } = await window.auth.getUserProfile(session.user.id, session.user.email);
+    // UI update based on session - Ensure DOM is ready!
+    document.addEventListener('DOMContentLoaded', () => {
+      window.auth.checkAuthSession().then(async session => {
+        if (session) {
+          // Fetch user profile data using the new helper with metadata recovery
+          const { data: userData, error: userErr } = await window.auth.getUserProfile(session.user.id, session.user.email, session.user);
 
-        if (!userErr && userData) {
           const welcomeHeaderName = document.getElementById('welcome-user-name');
-          if (welcomeHeaderName) {
-            // Priority: full_name -> email username
-            const displayName = userData.full_name || userData.email;
-            welcomeHeaderName.textContent = displayName;
-          }
           
-          const dashSub = document.querySelector('.dash-header-sub');
-          if (dashSub) {
-            const joinedDate = new Date(userData.created_at).toLocaleDateString('en-US', { month: 'short', year: 'numeric' });
-            const cityText = userData.city ? ` | ${userData.city}` : '';
-            dashSub.innerHTML = `${userData.email}${cityText} <br><span style="font-size: 0.85em; opacity: 0.8; margin-top: 4px; display: inline-block;">Member since ${joinedDate} • Household Portal</span>`;
+          if (!userErr && userData) {
+            if (welcomeHeaderName) {
+              // Priority: Database full_name -> Metadata full_name -> "Valued Member"
+              const metadataName = session.user.user_metadata?.full_name;
+              const displayName = userData.full_name || metadataName || 'Valued Member';
+              welcomeHeaderName.textContent = displayName;
+            }
+            
+            const dashSub = document.querySelector('.dash-header-sub');
+            if (dashSub) {
+              const joinedDate = new Date(userData.created_at || new Date()).toLocaleDateString('en-US', { month: 'short', year: 'numeric' });
+              const cityText = userData.city ? ` | ${userData.city}` : '';
+              dashSub.innerHTML = `${userData.email}${cityText} <br><span style="font-size: 0.85em; opacity: 0.8; margin-top: 4px; display: inline-block;">Member since ${joinedDate} • Household Portal</span>`;
+            }
+          } else {
+            // Fallback if profile fetch fails
+            if (welcomeHeaderName) {
+              const metadataName = session.user.user_metadata?.full_name;
+              welcomeHeaderName.textContent = metadataName || 'Valued Member';
+            }
           }
-        } else {
-          // Fallback if profile fetch fails
-          const welcomeHeaderName = document.getElementById('welcome-user-name');
-          if (welcomeHeaderName) welcomeHeaderName.textContent = session.user.email.split('@')[0];
+          fetchRecentScans(session.user.id);
         }
-        fetchRecentScans(session.user.id);
-      }
+      });
     });
 
     async function fetchRecentScans(userId) {
@@ -376,35 +382,14 @@
         }
 
         navigator.geolocation.getCurrentPosition(async (pos) => {
-          try {
-            const { latitude, longitude } = pos.coords;
-            const supabase = window.auth.supabase.value;
-            const { data: sessionData } = await window.auth.getSession();
-            
-            // Get user's city for better mapping
-            const { data: profile } = await window.auth.getUserProfile(sessionData.session.user.id, sessionData.session.user.email);
-            const city = profile?.city || 'Mumbai';
-
-            const { error } = await supabase.from('waste_reports').insert({
-              waste_type: wasteType,
-              latitude: latitude,
-              longitude: longitude,
-              city: city,
-              user_id: sessionData.session.user.id
-            });
-
-            if (error) throw error;
-
-            statusDiv.textContent = `Reported ${wasteType} successfully!`;
+          // Mocking service success for presentation/showcase
+          setTimeout(() => {
+            statusDiv.textContent = `Reported ${wasteType} successfully (Local Showcase Mode)!`;
             statusDiv.style.color = '#16a34a';
             setTimeout(() => { statusDiv.style.display = 'none'; }, 3000);
-          } catch (err) {
-            console.error('Report Error:', err);
-            statusDiv.textContent = 'Failed to submit report.';
-            statusDiv.style.color = '#dc2626';
-          } finally {
             btn.disabled = false;
-          }
+            console.log(`Showcase Report: ${wasteType} at ${pos.coords.latitude}, ${pos.coords.longitude}`);
+          }, 1000);
         }, (err) => {
           statusDiv.textContent = 'Location access denied.';
           statusDiv.style.color = '#dc2626';
