@@ -52,18 +52,21 @@
           console.log('NOTICE: Email confirmation is likely required. Session is null.');
         }
 
-        // Run database sync in background
-        supabase.from('profiles').upsert({
-          id: data.user.id,
-          email: data.user.email,
-          full_name: fullName,
-          city: city,
-          role: role,
-          created_at: new Date().toISOString()
-        }).then(({ error: upsertErr }) => {
+        // Await database sync to reduce race conditions
+        try {
+          const { error: upsertErr } = await supabase.from('profiles').upsert({
+            id: data.user.id,
+            email: data.user.email,
+            full_name: fullName,
+            city: city,
+            role: role,
+            created_at: new Date().toISOString()
+          });
           if (upsertErr) console.error('Profile sync error:', upsertErr);
           else console.log('Profile sync complete.');
-        });
+        } catch (e) {
+          console.error('Profile sync exception:', e);
+        }
       }
 
       return { data, error };
@@ -84,8 +87,8 @@
         }
       } else if (res.data?.user) {
         console.log('SignIn success. User ID:', res.data.user.id);
-        // Fetch profile and role
-        const { data: userData, error: profileError } = await this.getUserProfile(res.data.user.id, res.data.user.email);
+        // Fetch profile and role with metadata recovery
+        const { data: userData, error: profileError } = await this.getUserProfile(res.data.user.id, res.data.user.email, res.data.user);
         if (profileError) console.error('SignIn Profile Fetch Error:', profileError);
         
         const role = userData?.role || 'user';
@@ -142,8 +145,8 @@
         if (session) {
           document.body.classList.add('authenticated');
           
-          // Fetch user profile and role from profiles table
-          const { data: userData } = await this.getUserProfile(session.user.id, session.user.email);
+          // Fetch user profile and role from profiles table with metadata recovery
+          const { data: userData } = await this.getUserProfile(session.user.id, session.user.email, session.user);
           const role = userData?.role || 'user';
           
         } else {
@@ -187,20 +190,26 @@
     /**
      * Fetch user profile from 'profiles' table or create it if missing.
      */
-    async getUserProfile(userId, email) {
+    async getUserProfile(userId, email, sessionUser = null) {
       console.log(`Fetching profile for user: ${userId} (${email})`);
       const supabase = getClient();
       let { data, error } = await supabase.from('profiles').select('*').eq('id', userId).single();
 
       if (error) {
         if (error.code === 'PGRST116') { // Row not found
-          console.warn('Profile NOT FOUND in database. Creating basic profile...');
+          console.warn('Profile NOT FOUND in database. Attempting recovery from metadata...');
+          
+          // Recovery: use session metadata if available
+          const metadataName = sessionUser?.user_metadata?.full_name || sessionUser?.user_metadata?.name;
+          const metadataCity = sessionUser?.user_metadata?.city || 'Unknown';
+          const metadataRole = sessionUser?.user_metadata?.role || 'user';
+
           const newProfile = {
             id: userId,
             email: email,
-            full_name: email.split('@')[0], // Fallback to email username
-            city: 'Unknown',
-            role: 'user',
+            full_name: metadataName || email.split('@')[0], 
+            city: metadataCity,
+            role: metadataRole,
             created_at: new Date().toISOString()
           };
           const { data: createdData, error: createErr } = await supabase.from('profiles').insert(newProfile).select().single();
